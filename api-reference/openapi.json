@@ -1,94 +1,330 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "Gecko SAST Scanner API",
+    "version": "v1",
+    "description": "Use the Gecko API to launch scans and read scan, repository, and vulnerability data for your active team."
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://app.gecko.security",
+      "description": "Production"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "ApiKeyAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Scans",
+      "description": "Launch scans and read scan-level data."
+    },
+    {
+      "name": "Repositories",
+      "description": "Read repository inventory and repository vulnerability data."
+    },
+    {
+      "name": "Vulnerabilities",
+      "description": "Read vulnerability data across your active team."
+    },
+    {
+      "name": "Utility",
+      "description": "Service health and utility endpoints."
     }
   ],
   "paths": {
-    "/plants": {
+    "/api/v1/health": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
+        "tags": [
+          "Utility"
+        ],
+        "summary": "Check API health",
+        "description": "Returns the current API health status and the list of public `v1` endpoints. This endpoint does not require authentication.",
+        "operationId": "getApiV1Health",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "The API is healthy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                },
+                "example": {
+                  "version": "v1",
+                  "status": "healthy",
+                  "timestamp": "2026-03-10T16:00:00.000Z",
+                  "service": "Gecko SAST Scanner API",
+                  "endpoints": {
+                    "scans": "/api/v1/scans",
+                    "vulnerabilities": "/api/v1/vulnerabilities",
+                    "scanVulnerabilities": "/api/v1/scans/{scanId}/vulnerabilities",
+                    "repositories": "/api/v1/repositories",
+                    "repositoryVulnerabilities": "/api/v1/repositories/{repositoryId}/vulnerabilities",
+                    "scanEndpoints": "/api/v1/scans/{scanId}/endpoints",
+                    "scanWiki": "/api/v1/scans/{scanId}/wiki"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API health check failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthErrorResponse"
+                },
+                "example": {
+                  "version": "v1",
+                  "status": "unhealthy",
+                  "error": "Service check failed",
+                  "timestamp": "2026-03-10T16:00:00.000Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scans": {
+      "get": {
+        "tags": [
+          "Scans"
+        ],
+        "summary": "List scans",
+        "description": "Returns scans for the team attached to your API key. This route requires a key whose role includes the `scans.read` permission.",
+        "operationId": "getApiV1Scans",
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
+            "$ref": "#/components/parameters/status"
+          },
+          {
+            "$ref": "#/components/parameters/language"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
           }
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "A paginated list of scans.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/ScanListResponse"
+                },
+                "example": {
+                  "version": "v1",
+                  "data": [
+                    {
+                      "id": "f5d35de5-8fc8-4a01-8e28-3bae5d6d26ad",
+                      "name": "Sample Scan",
+                      "status": "completed",
+                      "isDone": true,
+                      "createdAt": "2025-04-22T15:34:53.674Z",
+                      "endAt": "2025-04-22T16:08:22.115Z",
+                      "programmingLanguage": "TypeScript",
+                      "progress": 100,
+                      "vulnerabilityCounts": {
+                        "total": 42,
+                        "critical": 3,
+                        "high": 11,
+                        "medium": 20,
+                        "low": 8
+                      }
+                    }
+                  ],
+                  "pagination": {
+                    "total": 123,
+                    "limit": 50,
+                    "offset": 0,
+                    "hasMore": true
+                  },
+                  "filters": {
+                    "status": "completed",
+                    "language": "typescript"
                   }
                 }
               }
             }
           },
           "400": {
-            "description": "Unexpected error",
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "The API key is valid, but the key does not include the `scans.read` permission.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "API key lacks scans.read permission"
                 }
               }
             }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       },
       "post": {
-        "description": "Creates a new plant in the store",
+        "tags": [
+          "Scans"
+        ],
+        "summary": "Launch a scan",
+        "description": "Starts a new scan for a GitLab repository that the team can access. This route requires a key whose role includes the `scans.run` permission, a configured team GitLab integration, and available scan capacity on the current plan. Gecko resolves the target branch in this order: request `branch`, branch in the GitLab URL, then the repository default branch.",
+        "operationId": "postApiV1Scans",
         "requestBody": {
-          "description": "Plant to add to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/ScanCreateRequest"
+              },
+              "example": {
+                "name": "Paperbaum",
+                "gitlabUrl": "https://gitlab.com/gecko-security/Paperbaum/-/tree/main"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
-          "200": {
-            "description": "plant response",
+          "201": {
+            "description": "The scan was launched.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/ScanCreateResponse"
+                },
+                "example": {
+                  "version": "v1",
+                  "data": {
+                    "scanId": "f5d35de5-8fc8-4a01-8e28-3bae5d6d26ad",
+                    "name": "Paperbaum",
+                    "status": "launched",
+                    "repository": {
+                      "fullName": "gecko-security/Paperbaum",
+                      "branch": "main",
+                      "instance": "gitlab.com"
+                    },
+                    "taskArn": "arn:aws:ecs:eu-west-2:123456789012:task/gecko/1234567890abcdef"
+                  }
                 }
               }
             }
           },
           "400": {
-            "description": "unexpected error",
+            "description": "The request body or GitLab URL is invalid.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingFields": {
+                    "value": {
+                      "error": "'name' and 'gitlabUrl' are required"
+                    }
+                  },
+                  "instanceMismatch": {
+                    "value": {
+                      "error": "GitLab instance mismatch",
+                      "details": "Expected gitlab.com, received self-managed.example.com"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "The API key does not have permission to run scans, the key is not attached to a team, the team GitLab integration is unavailable, or the plan scan limit was reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingPermission": {
+                    "value": {
+                      "error": "API key lacks scans.run permission"
+                    }
+                  },
+                  "noTeam": {
+                    "value": {
+                      "error": "No active team associated with API key"
+                    }
+                  },
+                  "gitlabMissing": {
+                    "value": {
+                      "error": "GitLab integration not configured for team"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The team for the API key could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Team not found"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "description": "Gecko created the scan record, but the scanner launch failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Failed to start scan",
+                  "details": "scanner service unavailable"
                 }
               }
             }
@@ -96,121 +332,1672 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/api/v1/scans/{scanId}/vulnerabilities": {
+      "get": {
+        "tags": [
+          "Scans"
+        ],
+        "summary": "List vulnerabilities for a scan",
+        "description": "Returns vulnerabilities for a specific scan in the team attached to your API key.",
+        "operationId": "getApiV1ScansByScanIdVulnerabilities",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
+            "$ref": "#/components/parameters/scanId"
+          },
+          {
+            "$ref": "#/components/parameters/severityExact"
+          },
+          {
+            "$ref": "#/components/parameters/type"
+          },
+          {
+            "$ref": "#/components/parameters/cwe"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "A paginated list of vulnerabilities for the scan.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ScanVulnerabilityListResponse"
+                },
+                "example": {
+                  "version": "v1",
+                  "data": [
+                    {
+                      "id": "2a7c9f10-3b1e-4f2d-9a33-1dcf8c7a1d01",
+                      "scanId": "00000000-0000-0000-0000-000000000001",
+                      "severity": 9.4,
+                      "confidenceScore": 8.5,
+                      "title": "Unbounded command template allows shell injection",
+                      "type": "Command Execution",
+                      "cwe": "CWE-78",
+                      "filePath": "services/reports/run_report.ts",
+                      "shortDescription": "User input is interpolated into a shell command without proper quoting.",
+                      "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+                    }
+                  ],
+                  "pagination": {
+                    "total": 1,
+                    "limit": 100,
+                    "offset": 0,
+                    "hasMore": false
+                  },
+                  "filters": {
+                    "severity": null,
+                    "type": null,
+                    "cwe": null
+                  }
                 }
               }
             }
+          },
+          "400": {
+            "description": "The path or query parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingScanId": {
+                    "value": {
+                      "error": "Scan ID is required"
+                    }
+                  },
+                  "badSeverity": {
+                    "value": {
+                      "error": "Severity must be a number between 0 and 10"
+                    }
+                  },
+                  "badLimit": {
+                    "value": {
+                      "error": "Limit cannot exceed 1000"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "The API key is not attached to an active team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "No active team associated with API key"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The scan does not exist or is outside the team scope for the API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Scan not found"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
+    },
+    "/api/v1/scans/{scanId}/endpoints": {
+      "get": {
+        "tags": [
+          "Scans"
+        ],
+        "summary": "Get scan endpoint definitions",
+        "description": "Returns the scan endpoint definition that Gecko stored for the scan. Gecko returns the raw value and a parsed object when the stored format is JSON.",
+        "operationId": "getApiV1ScansByScanIdEndpoints",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scanId"
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "The scan endpoint definition.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanEndpointsResponse"
+                },
+                "examples": {
+                  "yaml": {
+                    "value": {
+                      "version": "v1",
+                      "scan_id": "f5d35de5-8fc8-4a01-8e28-3bae5d6d26ad",
+                      "format": "yaml",
+                      "endpoints": "openapi: 3.1.0\ninfo:\n  title: Example API\npaths:\n  /health:\n    get:\n      summary: Health",
+                      "parsed": null
+                    }
+                  },
+                  "json": {
+                    "value": {
+                      "version": "v1",
+                      "scan_id": "f5d35de5-8fc8-4a01-8e28-3bae5d6d26ad",
+                      "format": "json",
+                      "endpoints": "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"Example API\"}}",
+                      "parsed": {
+                        "openapi": "3.1.0",
+                        "info": {
+                          "title": "Example API"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The scan ID is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Scan ID is required"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "The API key is not attached to an active team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "No active team associated with API key"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The scan does not exist or is outside the team scope for the API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Scan not found"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/scans/{scanId}/wiki": {
+      "get": {
+        "tags": [
+          "Scans"
+        ],
+        "summary": "Get scan wiki markdown",
+        "description": "Returns the generated scan summary as Markdown. Gecko uses the stored summary string directly when it is already Markdown and builds Markdown from the structured summary payload otherwise.",
+        "operationId": "getApiV1ScansByScanIdWiki",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scanId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The scan wiki in Markdown format.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              }
+            },
+            "content": {
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "# Threat model summary\n\nThis scan covers the checkout service.\n\n---\n\n## Authentication\n\nThe service uses bearer tokens."
+              }
+            }
+          },
+          "400": {
+            "description": "The scan ID is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Scan ID is required"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "The API key is not attached to an active team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "No active team associated with API key"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The scan does not exist, is outside the team scope for the API key, or no summary is available for the scan.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "scanMissing": {
+                    "value": {
+                      "error": "Scan not found"
+                    }
+                  },
+                  "summaryMissing": {
+                    "value": {
+                      "error": "No summary available for this scan"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/repositories": {
+      "get": {
+        "tags": [
+          "Repositories"
+        ],
+        "summary": "List repositories",
+        "description": "Returns repositories for the team attached to your API key.",
+        "operationId": "getApiV1Repositories",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/name"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of repositories.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryListResponse"
+                },
+                "example": {
+                  "version": "v1",
+                  "data": [
+                    {
+                      "id": "4dfd6898-69f0-4dff-9cff-8cd75f7ad28a",
+                      "name": "gecko-security/Paperbaum",
+                      "fullName": "gecko-security/Paperbaum",
+                      "clonePath": "https://github.com/gecko-security/Paperbaum.git",
+                      "lastScanAt": "2025-08-04T09:01:20.000Z",
+                      "scanCount": 8,
+                      "vulnerabilityCount": 37
+                    }
+                  ],
+                  "pagination": {
+                    "total": 1,
+                    "limit": 50,
+                    "offset": 0,
+                    "hasMore": false
+                  },
+                  "filters": {
+                    "name": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/repositories/{repositoryId}/vulnerabilities": {
+      "get": {
+        "tags": [
+          "Repositories"
+        ],
+        "summary": "List vulnerabilities for a repository",
+        "description": "Returns vulnerabilities for the repository path in `repositoryId`. URL-encode the repository path before you send it. For example, use `gecko-security%2FPaperbaum` for `gecko-security/Paperbaum`.",
+        "operationId": "getApiV1RepositoriesByRepositoryIdVulnerabilities",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/repositoryId"
+          },
+          {
+            "$ref": "#/components/parameters/severityMinimum"
+          },
+          {
+            "$ref": "#/components/parameters/type"
+          },
+          {
+            "$ref": "#/components/parameters/cwe"
+          },
+          {
+            "$ref": "#/components/parameters/days"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of vulnerabilities for the repository.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryVulnerabilityListResponse"
+                },
+                "example": {
+                  "version": "v1",
+                  "repository": "gecko-security/Paperbaum",
+                  "data": [
+                    {
+                      "id": "3b8d0e21-4c2f-5e3d-0b44-2edf9d8b2e12",
+                      "scanId": "11111111-1111-1111-1111-111111111111",
+                      "scanName": "Weekly Security Scan",
+                      "scanCreatedAt": "2025-08-02T08:00:00.000Z",
+                      "severity": 7.5,
+                      "confidenceScore": 9.0,
+                      "title": "Path Traversal in File Download",
+                      "type": "LFI",
+                      "cwe": "CWE-22",
+                      "filePath": "api/files/download.py",
+                      "shortDescription": "User-controlled path allows reading arbitrary files.",
+                      "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N"
+                    }
+                  ],
+                  "pagination": {
+                    "total": 5,
+                    "limit": 100,
+                    "offset": 0,
+                    "hasMore": false
+                  },
+                  "filters": {
+                    "severity": null,
+                    "type": null,
+                    "cwe": null,
+                    "days": 7
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The path or query parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingRepositoryId": {
+                    "value": {
+                      "error": "Repository ID is required"
+                    }
+                  },
+                  "badSeverity": {
+                    "value": {
+                      "error": "Severity must be a number between 0 and 10"
+                    }
+                  },
+                  "badDays": {
+                    "value": {
+                      "error": "Days must be a positive integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v1/vulnerabilities": {
+      "get": {
+        "tags": [
+          "Vulnerabilities"
+        ],
+        "summary": "List vulnerabilities across the active team",
+        "description": "Returns vulnerabilities across all scans that belong to the team attached to your API key.",
+        "operationId": "getApiV1Vulnerabilities",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/severityMinimum"
+          },
+          {
+            "$ref": "#/components/parameters/type"
+          },
+          {
+            "$ref": "#/components/parameters/cwe"
+          },
+          {
+            "$ref": "#/components/parameters/scanIdFilter"
+          },
+          {
+            "$ref": "#/components/parameters/days"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of vulnerabilities across the active team.",
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/XRateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/XRateLimitReset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VulnerabilityListResponse"
+                },
+                "example": {
+                  "version": "v1",
+                  "data": [
+                    {
+                      "id": "2a7c9f10-3b1e-4f2d-9a33-1dcf8c7a1d01",
+                      "scanId": "00000000-0000-0000-0000-000000000001",
+                      "scanName": "My Repository Scan",
+                      "scanCreatedAt": "2025-08-01T10:00:00.000Z",
+                      "severity": 9.4,
+                      "confidenceScore": 8.5,
+                      "title": "SQL Injection in User Search",
+                      "type": "SQLI",
+                      "cwe": "CWE-89",
+                      "filePath": "api/users/search.py",
+                      "shortDescription": "User input directly concatenated into SQL query.",
+                      "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+                    }
+                  ],
+                  "pagination": {
+                    "total": 42,
+                    "limit": 100,
+                    "offset": 0,
+                    "hasMore": false
+                  },
+                  "filters": {
+                    "severity": null,
+                    "type": null,
+                    "cwe": null,
+                    "scan_id": null,
+                    "days": 14
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The query parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "badSeverity": {
+                    "value": {
+                      "error": "Severity must be a number between 0 and 10"
+                    }
+                  },
+                  "badDays": {
+                    "value": {
+                      "error": "Days must be a positive integer"
+                    }
+                  },
+                  "badLimit": {
+                    "value": {
+                      "error": "Limit cannot exceed 1000"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
     }
   },
   "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Team-scoped Gecko API key. Keys start with `gk_`."
+      }
+    },
+    "headers": {
+      "XRateLimitRemaining": {
+        "description": "Requests remaining in the current one-hour window for the API key.",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "XRateLimitReset": {
+        "description": "ISO 8601 timestamp for when the current one-hour rate-limit window resets.",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "RetryAfter": {
+        "description": "Seconds to wait before retrying the request.",
+        "schema": {
+          "type": "integer"
+        }
+      }
+    },
+    "parameters": {
+      "scanId": {
+        "name": "scanId",
+        "in": "path",
+        "required": true,
+        "description": "Scan UUID.",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "repositoryId": {
+        "name": "repositoryId",
+        "in": "path",
+        "required": true,
+        "description": "URL-encoded repository path, for example `gecko-security%2FPaperbaum` or `gitlab:group%2Fproject`.",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "status": {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "description": "Filter scans by status.",
+        "schema": {
+          "type": "string"
+        },
+        "example": "completed"
+      },
+      "language": {
+        "name": "language",
+        "in": "query",
+        "required": false,
+        "description": "Filter scans by programming language.",
+        "schema": {
+          "type": "string"
+        },
+        "example": "typescript"
+      },
+      "name": {
+        "name": "name",
+        "in": "query",
+        "required": false,
+        "description": "Filter repositories by repository name or full name.",
+        "schema": {
+          "type": "string"
+        },
+        "example": "paperbaum"
+      },
+      "severityMinimum": {
+        "name": "severity",
+        "in": "query",
+        "required": false,
+        "description": "Filter to vulnerabilities with a severity greater than or equal to this value.",
+        "schema": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "example": 9
+      },
+      "severityExact": {
+        "name": "severity",
+        "in": "query",
+        "required": false,
+        "description": "Filter to vulnerabilities whose severity matches this value exactly.",
+        "schema": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "example": 9.4
+      },
+      "type": {
+        "name": "type",
+        "in": "query",
+        "required": false,
+        "description": "Filter vulnerabilities by type. Gecko performs a case-insensitive substring match.",
+        "schema": {
+          "type": "string"
+        },
+        "example": "sqli"
+      },
+      "cwe": {
+        "name": "cwe",
+        "in": "query",
+        "required": false,
+        "description": "Filter vulnerabilities by CWE. Gecko performs a case-insensitive substring match.",
+        "schema": {
+          "type": "string"
+        },
+        "example": "CWE-89"
+      },
+      "scanIdFilter": {
+        "name": "scan_id",
+        "in": "query",
+        "required": false,
+        "description": "Filter cross-scan vulnerability results to a single scan UUID.",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "days": {
+        "name": "days",
+        "in": "query",
+        "required": false,
+        "description": "Filter results to scans created within the last `N` days.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "example": 14
+      },
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "description": "Maximum number of results to return. Gecko defaults to `100` and caps the value at `1000`.",
+        "schema": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "example": 50
+      },
+      "offset": {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "description": "Number of results to skip before Gecko starts returning rows.",
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "minimum": 0
+        },
+        "example": 0
+      }
+    },
+    "responses": {
+      "BadRequestError": {
+        "description": "The request parameters are invalid.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": "Limit cannot exceed 1000"
+            }
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+      "UnauthorizedError": {
+        "description": "The API key is missing, malformed, or invalid.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "missingKey": {
+                "value": {
+                  "error": "API key is required"
+                }
+              },
+              "badFormat": {
+                "value": {
+                  "error": "Invalid API key format"
+                }
+              },
+              "badKey": {
+                "value": {
+                  "error": "Invalid API key"
+                }
               }
             }
           }
-        ]
+        }
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
+      "RateLimitedError": {
+        "description": "The API key reached the per-hour request limit.",
+        "headers": {
+          "Retry-After": {
+            "$ref": "#/components/headers/RetryAfter"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": "Rate limit exceeded"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Gecko failed to process the request.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": "Internal server error"
+            }
           }
         }
       }
     },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "details": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "HealthErrorResponse": {
+        "type": "object",
+        "required": [
+          "version",
+          "status",
+          "error",
+          "timestamp"
+        ],
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "v1"
+          },
+          "status": {
+            "type": "string",
+            "const": "unhealthy"
+          },
+          "error": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "hasMore"
+        ],
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ScanVulnerabilityCounts": {
+        "type": "object",
+        "required": [
+          "total",
+          "critical",
+          "high",
+          "medium",
+          "low"
+        ],
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "critical": {
+            "type": "integer"
+          },
+          "high": {
+            "type": "integer"
+          },
+          "medium": {
+            "type": "integer"
+          },
+          "low": {
+            "type": "integer"
+          }
+        }
+      },
+      "ScanSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "status",
+          "isDone",
+          "createdAt",
+          "endAt",
+          "programmingLanguage",
+          "progress",
+          "vulnerabilityCounts"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isDone": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "programmingLanguage": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "progress": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "vulnerabilityCounts": {
+            "$ref": "#/components/schemas/ScanVulnerabilityCounts"
+          }
+        }
+      },
+      "ScanCreateRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "gitlabUrl"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Readable scan name."
+          },
+          "gitlabUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "GitLab repository URL. You can include a branch in `?ref=` or in a `/-/tree/<branch>` path."
+          },
+          "branch": {
+            "type": "string",
+            "description": "Optional branch override."
+          }
+        }
+      },
+      "ScanCreateResponse": {
+        "type": "object",
+        "required": [
+          "version",
+          "data"
+        ],
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "v1"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "scanId",
+              "name",
+              "status",
+              "repository",
+              "taskArn"
+            ],
+            "properties": {
+              "scanId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "name": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "const": "launched"
+              },
+              "repository": {
+                "type": "object",
+                "required": [
+                  "fullName",
+                  "branch",
+                  "instance"
+                ],
+                "properties": {
+                  "fullName": {
+                    "type": "string"
+                  },
+                  "branch": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "instance": {
+                    "type": "string"
+                  }
+                }
+              },
+              "taskArn": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "RepositorySummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "fullName",
+          "clonePath",
+          "lastScanAt",
+          "scanCount",
+          "vulnerabilityCount"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "clonePath": {
+            "type": "string"
+          },
+          "lastScanAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "scanCount": {
+            "type": "integer"
+          },
+          "vulnerabilityCount": {
+            "type": "integer"
+          }
+        }
+      },
+      "VulnerabilitySummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "scanId",
+          "severity",
+          "title",
+          "type",
+          "cwe",
+          "filePath",
+          "shortDescription"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "scanId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "scanName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scanCreatedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "severity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "confidenceScore": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 10
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "cwe": {
+            "type": "string"
+          },
+          "filePath": {
+            "type": "string"
+          },
+          "shortDescription": {
+            "type": "string"
+          },
+          "cvssVector": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "ScanArtifactFilters": {
+        "type": "object",
+        "required": [
+          "severity",
+          "type",
+          "cwe"
+        ],
+        "properties": {
+          "severity": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cwe": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TeamVulnerabilityFilters": {
+        "type": "object",
+        "required": [
+          "severity",
+          "type",
+          "cwe",
+          "scan_id",
+          "days"
+        ],
+        "properties": {
+          "severity": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cwe": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scan_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "days": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "RepositoryVulnerabilityFilters": {
+        "type": "object",
+        "required": [
+          "severity",
+          "type",
+          "cwe",
+          "days"
+        ],
+        "properties": {
+          "severity": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cwe": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "days": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "ScanListFilters": {
+        "type": "object",
+        "required": [
+          "status",
+          "language"
+        ],
+        "properties": {
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "RepositoryListFilters": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ScanListResponse": {
+        "type": "object",
+        "required": [
+          "version",
+          "data",
+          "pagination",
+          "filters"
+        ],
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "v1"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScanSummary"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/ScanListFilters"
+          }
+        }
+      },
+      "RepositoryListResponse": {
+        "type": "object",
+        "required": [
+          "version",
+          "data",
+          "pagination",
+          "filters"
+        ],
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "v1"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RepositorySummary"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/RepositoryListFilters"
+          }
+        }
+      },
+      "VulnerabilityListResponse": {
+        "type": "object",
+        "required": [
+          "version",
+          "data",
+          "pagination",
+          "filters"
+        ],
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "v1"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VulnerabilitySummary"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/TeamVulnerabilityFilters"
+          }
+        }
+      },
+      "RepositoryVulnerabilityListResponse": {
+        "type": "object",
+        "required": [
+          "version",
+          "repository",
+          "data",
+          "pagination",
+          "filters"
+        ],
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "v1"
+          },
+          "repository": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VulnerabilitySummary"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/RepositoryVulnerabilityFilters"
+          }
+        }
+      },
+      "ScanVulnerability": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/VulnerabilitySummary"
+          },
+          {
+            "type": "object",
+            "additionalProperties": true
+          }
+        ]
+      },
+      "ScanVulnerabilityListResponse": {
+        "type": "object",
+        "required": [
+          "version",
+          "data",
+          "pagination",
+          "filters"
+        ],
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "v1"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScanVulnerability"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/ScanArtifactFilters"
+          }
+        }
+      },
+      "ScanEndpointsResponse": {
+        "type": "object",
+        "required": [
+          "version",
+          "scan_id",
+          "format",
+          "endpoints",
+          "parsed"
+        ],
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "v1"
+          },
+          "scan_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "format": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "yaml",
+              "json",
+              null
+            ]
+          },
+          "endpoints": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "parsed": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "version",
+          "status",
+          "timestamp",
+          "service",
+          "endpoints"
+        ],
+        "properties": {
+          "version": {
+            "type": "string",
+            "const": "v1"
+          },
+          "status": {
+            "type": "string",
+            "const": "healthy"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "service": {
+            "type": "string"
+          },
+          "endpoints": {
+            "type": "object",
+            "required": [
+              "scans",
+              "vulnerabilities",
+              "scanVulnerabilities",
+              "repositories",
+              "repositoryVulnerabilities",
+              "scanEndpoints",
+              "scanWiki"
+            ],
+            "properties": {
+              "scans": {
+                "type": "string"
+              },
+              "vulnerabilities": {
+                "type": "string"
+              },
+              "scanVulnerabilities": {
+                "type": "string"
+              },
+              "repositories": {
+                "type": "string"
+              },
+              "repositoryVulnerabilities": {
+                "type": "string"
+              },
+              "scanEndpoints": {
+                "type": "string"
+              },
+              "scanWiki": {
+                "type": "string"
+              }
+            }
+          }
+        }
       }
     }
   }

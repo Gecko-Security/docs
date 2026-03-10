@@ -1,97 +1,126 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Gecko Security docs"
+description: "Connect your first repository, run scans, review findings, and configure the Gecko platform with the right integrations."
 ---
 
-## Setting up
+<Info>
+  Gecko helps teams find real vulnerabilities in source code, review what
+  matters, and move remediation into the normal engineering workflow.
+</Info>
 
-Get your documentation site up and running in minutes.
+These docs cover everything from connecting your first repository to setting up
+authentication and workflow integrations for a team.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Quick start" icon="rocket" href="/quick-start">
+    Get scanning in minutes. Connect code, run a first baseline scan, and see
+    how Gecko presents findings.
+  </Card>
+  <Card title="API Reference" icon="braces" href="/api-reference/introduction">
+    Integrate Gecko into scripts, internal tooling, and workflow automation
+    with the `v1` API.
+  </Card>
+</CardGroup>
 
-## Make it yours
+## Get started
 
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
+<Columns cols={3}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Quick start"
+    icon="rocket"
+    href="/quick-start"
   >
-    Edit your docs locally and preview them in real time.
+    Connect a repository, run a first baseline scan, review the results, and
+    understand what to expect in the first week.
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Scanning overview"
+    icon="radar"
+    href="/scanning-overview"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Understand the Gecko workflow from repository onboarding through triage,
+    remediation, and repeat scans.
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
+    title="Platform"
+    icon="layout-panel-top"
+    href="/teams-permissions"
   >
-    Auto-generate API documentation from OpenAPI specifications.
+    Manage team access, scanner settings, and the controls that shape how Gecko
+    runs across the organization.
   </Card>
 </Columns>
 
-## Create beautiful pages
+## Scanning products
 
-Everything you need to create world-class documentation.
+<CardGroup cols={3}>
+  <Card title="Scanning overview" icon="search" href="/scanning-overview">
+    Start with the full Gecko scan model and what to expect from the first
+    baseline run.
+  </Card>
+  <Card title="Repository scanning" icon="folder-git-2" href="/repository-scanning">
+    Connect GitHub, GitLab, public OSS targets, or ZIP uploads and choose the
+    right scan input for the job.
+  </Card>
+  <Card title="Findings & remediation" icon="wrench" href="/findings-remediation">
+    Review evidence, prioritize risk, fix what matters, and confirm the result
+    with a fresh scan.
+  </Card>
+</CardGroup>
 
-<Columns cols={2}>
+## Platform and integrations
+
+<Columns cols={3}>
   <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
+    title="Platform"
+    icon="settings-2"
+    href="/scanner-settings"
   >
-    Use MDX to style your docs pages.
+    Configure scanner behavior, team workflows, and the operating settings that
+    make Gecko fit your environment.
   </Card>
   <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
+    title="Integrations"
+    icon="plug"
+    href="/integrations"
   >
-    Add sample code to demonstrate how to use your product.
+    Connect source control, ticketing, and notifications so findings move into
+    the tools your team already uses.
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="Authentication"
+    icon="shield"
+    href="/access/okta-saml-onboarding"
   >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+    Connect Okta, verify the first login, share the sign-in URL, and add SCIM
+    only after SSO works end to end.
   </Card>
 </Columns>
 
-## Need inspiration?
+## What to expect from Gecko
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={3}>
+  <Card title="Fast setup" icon="rocket">
+    Most teams connect a code host, choose a repository, and launch a first
+    scan in minutes.
+  </Card>
+  <Card title="Actionable evidence" icon="search-check">
+    Every finding should give you code context, explanation, and enough detail
+    to decide whether to fix now, track, or dismiss.
+  </Card>
+  <Card title="Continuous workflow" icon="git-branch">
+    Gecko works best when you rerun scans after fixes, keep integrations
+    connected, and treat security reviews as part of normal delivery.
+  </Card>
+</CardGroup>
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Dashboard" icon="house" href="https://app.gecko.security">
+    Open Gecko to review scan results, findings, and team settings.
+  </Card>
+  <Card title="Render locally" icon="terminal" href="/development">
+    Preview docs changes with Mintlify and validate updates before they ship.
+  </Card>
+</CardGroup>

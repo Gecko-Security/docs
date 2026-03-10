@@ -1,0 +1,192 @@
+---
+title: "SSO & Login"
+description: "Set up team login in Gecko with Okta SAML, verify the first sign-in, and add SCIM after SSO works."
+sidebarTitle: "SSO & Login"
+---
+
+<Info>
+  **Prerequisites**
+  - Gecko Enterprise plan
+  - A team admin who can manage **Settings** &gt; **Single Sign-On &amp; SCIM**
+  - An Okta admin who can create app integrations
+  - A test user in Okta who is not the person changing sign-in policy
+</Info>
+
+## Before you start
+
+This guide follows the current Gecko access flow:
+
+- You must save a unique team slug before you connect SSO.
+- Gecko keeps **SSO enforcement** optional until you turn it on.
+- Gecko shows the team sign-in URL after the connection is verified.
+- SCIM comes after SSO. It is not the first step.
+
+<Tip>
+  Keep one existing Gecko admin session open until the first Okta login
+  succeeds. Do not switch **SSO enforcement** to required during your first
+  test.
+</Tip>
+
+## Connect Okta SAML
+
+<Steps>
+<Step title="Set the team slug in Gecko">
+  Go to **Settings** &gt; **Single Sign-On &amp; SCIM**.
+
+  Save a unique team slug. Gecko uses it to generate your team sign-in path.
+
+  <Warning>
+    The team slug becomes read-only after SSO is connected.
+  </Warning>
+</Step>
+
+<Step title="Start the Okta setup from Gecko">
+  In the **Single sign-on** section, click **Connect**.
+
+  Gecko starts the self-service **Okta SAML** flow and pre-creates the
+  connection name for your team.
+
+  If you leave the setup midway, return to the same page and resume the pending
+  setup before it expires.
+</Step>
+
+<Step title="Create the SAML app in Okta">
+  In Okta, create a private **SAML 2.0** app integration.
+
+  Use the SAML values shown in the Gecko setup flow for the single sign-on URL,
+  audience, and certificate exchange.
+
+  Set **Name ID format** to `EmailAddress`.
+
+  Make sure the SAML subject resolves to each user's work email address.
+</Step>
+
+<Step title="Verify the connection in Gecko">
+  Return to Gecko and finish verification from **Settings** &gt; **Single Sign-On
+  &amp; SCIM**.
+
+  When verification succeeds, the connection moves to **Connected** and Gecko
+  shows the team **Sign-in URL**.
+</Step>
+
+<Step title="Test the first login">
+  Open the Gecko **Sign-in URL** in a fresh browser session.
+
+  Sign in with a real Okta user who should have access to the team.
+
+  Confirm the user lands in the correct workspace before you change
+  enforcement.
+</Step>
+
+<Step title="Share the sign-in URL and require SSO">
+  Share the Gecko **Sign-in URL** with your team.
+
+  Keep **SSO enforcement** set to **Optional** while you finish testing.
+
+  When sign-in is stable, change **SSO enforcement** to **Required**.
+</Step>
+</Steps>
+
+## Turn on SCIM after SSO works
+
+<Info>
+  Gecko starts in just-in-time provisioning mode after SSO is connected. Users
+  are created on first login. Move to SCIM when you want deterministic
+  provisioning, group sync, and cleaner role assignment.
+</Info>
+
+<Steps>
+<Step title="Enable SCIM in Gecko">
+  Stay in **Settings** &gt; **Single Sign-On &amp; SCIM**.
+
+  After SSO login works, enable SCIM in **Directory sync**.
+
+  Gecko reveals the SCIM base URL and rotates a fresh `gscim` token for the
+  connector.
+
+  <Note>
+    If your workspace says provisioning is managed by Auth0, finish
+    provisioning upstream there instead of using Gecko-hosted SCIM.
+  </Note>
+</Step>
+
+<Step title="Configure Okta provisioning">
+  In Okta, open the app integration and enable **SCIM** provisioning from
+  **General** &gt; **App Settings**.
+
+  In **Provisioning**, paste the Gecko SCIM base URL.
+
+  Use `userName` as the unique identifier.
+
+  Choose **HTTP Header** authentication and put the `gscim` token in the
+  `Authorization` header.
+
+  Enable **Create Users**, **Update User Attributes**, and **Deactivate Users**.
+</Step>
+
+<Step title="Push groups and map roles">
+  Push one Okta group for each Gecko role you want to manage.
+
+  Back in Gecko, map each pushed group to the matching role in **Role
+  mappings**.
+
+  Save the mappings before you run your first full sync.
+</Step>
+
+<Step title="Run the first sync">
+  Use **Sync Now** in Gecko.
+
+  Confirm users, groups, and role counts look right.
+
+  Fix any unmapped groups before you rely on automatic role assignment.
+</Step>
+</Steps>
+
+## Rollout checklist
+
+<CardGroup cols={2}>
+  <Card title="Ready for required SSO">
+    You saved the final team slug, verified the sign-in URL, tested a non-admin
+    login, and kept a fallback admin session alive.
+  </Card>
+  <Card title="Ready for SCIM">
+    You enabled SCIM after SSO worked, tested the connector, pushed groups, and
+    saved Gecko role mappings.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="The Connect button is disabled">
+    Save the team slug first. Gecko blocks SSO setup until the slug exists and
+    your latest slug edits are saved.
+  </Accordion>
+  <Accordion title="The team slug is locked">
+    That is expected after SSO is connected. Pick the final slug before you
+    finish the SSO setup.
+  </Accordion>
+  <Accordion title="Gecko does not show a sign-in URL">
+    The connection is not verified yet. Finish the Okta setup, then return to
+    Gecko and verify the pending connection.
+  </Accordion>
+  <Accordion title="Users can sign in, but role assignment is not deterministic">
+    You are probably still on just-in-time provisioning. Enable SCIM, push
+    groups from Okta, and save Gecko role mappings.
+  </Accordion>
+  <Accordion title="The SCIM base URL or token is missing">
+    Gecko only reveals those fields after SSO is verified and SCIM is enabled.
+    If provisioning is managed by Auth0 for your workspace, use the upstream
+    provisioning flow instead.
+  </Accordion>
+  <Accordion title="The first Okta login fails">
+    Re-check the SAML subject and **Name ID format**. Gecko expects a stable
+    work-email identity. Keep **SSO enforcement** optional until the login
+    succeeds end to end.
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  After you finish the rollout, run through the local preview checklist in
+  [Render locally](/development) before you ship doc changes to the team.
+</Tip>

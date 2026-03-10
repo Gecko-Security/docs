@@ -1,0 +1,58 @@
+---
+title: "Findings & Remediation"
+description: "Review Gecko findings, prioritize the right issues, and build a clean remediation workflow."
+---
+
+## Start with triage, not panic
+
+The first job is to understand the issue, not to patch blindly.
+
+For each finding, your team should answer four questions:
+
+1. Is the code path real in this environment?
+2. What is the likely blast radius?
+3. Is there a safe fix available now?
+4. How will we verify the result?
+
+## Recommended remediation workflow
+
+<Steps>
+<Step title="Open the finding details">
+  Review the explanation, code context, and remediation guidance before you
+  assign the work.
+</Step>
+<Step title="Validate impact with a code owner">
+  Security context matters, but product and runtime context matter too.
+</Step>
+<Step title="Fix the root cause where possible">
+  Prefer changes that remove the unsafe pattern instead of only hiding the most
+  visible symptom.
+</Step>
+<Step title="Push the work into your team workflow">
+  Use Jira, Linear, Slack, or the team’s preferred operating model once the
+  issue is validated.
+</Step>
+<Step title="Rescan to confirm the outcome">
+  The rescan is the proof that the vulnerability is actually gone.
+</Step>
+</Steps>
+
+## What a good remediation process looks like
+
+<CardGroup cols={2}>
+  <Card title="High-signal prioritization">
+    Start with issues that touch auth, secrets, remote execution, external
+    network access, or broad data exposure.
+  </Card>
+  <Card title="Clean ownership">
+    Every validated finding should have a clear next step, even if that next
+    step is to track it instead of fixing immediately.
+  </Card>
+  <Card title="Verification">
+    Use rescans, tests, and code review to confirm the repository is genuinely
+    safer after the change.
+  </Card>
+  <Card title="Repeatability">
+    The best teams make remediation routine, not exceptional.
+  </Card>
+</CardGroup>

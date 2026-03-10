@@ -1,11 +1,21 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Gecko Security",
+  "description": "Enterprise access docs for Gecko Security.",
+  "appearance": {
+    "default": "dark"
+  },
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#171D29",
+    "light": "#3B82F6",
+    "dark": "#1B2230"
+  },
+  "background": {
+    "color": {
+      "light": "#F5F7FB",
+      "dark": "#0D0D0D"
+    }
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -14,55 +24,83 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
               "index",
-              "quickstart",
+              "quick-start",
               "development"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Scanning",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "scanning-overview",
+              "repository-scanning",
+              "findings-remediation"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Platform",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "teams-permissions",
+              "scanner-settings"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Integrations",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "integrations",
+              "github-gitlab-integration",
+              "jira-integration",
+              "linear-integration",
+              "slack-integration"
+            ]
+          },
+          {
+            "group": "Authentication",
+            "pages": [
+              "access/okta-saml-onboarding"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
+        "openapi": "api-reference/openapi.json",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
               "api-reference/introduction"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Scans",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "GET /api/v1/scans",
+              "POST /api/v1/scans",
+              "GET /api/v1/scans/{scanId}/vulnerabilities",
+              "GET /api/v1/scans/{scanId}/endpoints",
+              "GET /api/v1/scans/{scanId}/wiki"
+            ]
+          },
+          {
+            "group": "Repositories",
+            "pages": [
+              "GET /api/v1/repositories",
+              "GET /api/v1/repositories/{repositoryId}/vulnerabilities"
+            ]
+          },
+          {
+            "group": "Vulnerabilities",
+            "pages": [
+              "GET /api/v1/vulnerabilities"
+            ]
+          },
+          {
+            "group": "Utility",
+            "pages": [
+              "GET /api/v1/health"
             ]
           }
         ]
@@ -71,14 +109,9 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Dashboard",
+          "href": "https://app.gecko.security",
+          "icon": "house"
         }
       ]
     }
@@ -90,33 +123,32 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Feedback",
+        "href": "mailto:feedback@gecko.security"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "href": "https://app.gecko.security"
     }
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/Gecko-Security",
+      "x": "https://x.com/gecko_sec"
     }
   }
 }

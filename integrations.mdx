@@ -1,0 +1,107 @@
+---
+title: "Integrations"
+description: "Connect Gecko to source control, issue trackers, notifications, and access systems."
+---
+
+## Connect integrations in the right order
+
+Do not connect everything on day one. Add integrations in the order that makes
+the scan workflow stronger:
+
+1. Source control
+2. Team workflow tools
+3. Notifications
+4. Access and provisioning
+
+Gecko works best when integrations follow the scan workflow instead of
+preceding it.
+
+## Source control
+
+### GitHub and GitLab
+
+Use **Settings** &gt; **Git Settings** to connect your source-control provider.
+
+After the provider is connected:
+
+- Gecko can load connected repositories directly in the scan flow.
+- Teams can choose repositories and branches without pasting raw URLs.
+- Repository-backed scans become easier to repeat and schedule.
+
+<Tip>
+  Start by connecting the provider your team already uses for private code.
+  Use public OSS URLs only when you are evaluating Gecko on a public project.
+</Tip>
+
+## Team workflow integrations
+
+### Jira
+
+Use **Settings** &gt; **Jira** when your team tracks remediation work in Jira.
+
+Connect Jira after your team already knows how it wants to triage findings.
+That keeps the integration useful instead of noisy.
+
+### Linear
+
+Use **Settings** &gt; **Linear** if your engineering organization works in
+Linear.
+
+Connect it when you want Gecko findings to move cleanly into your normal
+engineering backlog and ownership process.
+
+### ClickUp
+
+Use **Settings** &gt; **ClickUp** if ClickUp is where your team plans and tracks
+fix work.
+
+Use it the same way you would use Jira or Linear: to make remediation visible
+and owned.
+
+### Shortcut
+
+Use **Settings** &gt; **Shortcut** if your team manages engineering work there.
+
+Connect it after you have a stable triage process so only real issues become
+tracked work.
+
+## Notification integrations
+
+### Slack
+
+Use **Settings** &gt; **Slack** or **Settings** &gt; **Integrations** to connect
+Slack.
+
+Slack is best for timely scan notifications, follow-up nudges, and making sure
+the right team sees new security work without living inside Gecko all day.
+
+## Access and provisioning
+
+### Okta SAML and SCIM
+
+Use **Settings** &gt; **Single Sign-On &amp; SCIM** for team access control.
+
+Set up SSO after your team is actively using Gecko, not before your first scan.
+
+When you are ready, follow the dedicated [Okta SAML onboarding](/access/okta-saml-onboarding)
+guide.
+
+## Other integration surfaces
+
+### GitLab vulnerability export
+
+If your team needs findings to show up in GitLab-native security workflows, use
+**Settings** &gt; **GitLab vulnerabilities** after your main scan loop is
+already stable.
+
+### API reference
+
+If you are automating around Gecko, use the [API Reference](/api-reference/introduction)
+for endpoints, request schemas, and response fields.
+
+## Recommended setup checklist
+
+<Check>
+  Connect one code host first, run a real scan, fix at least one finding, and
+  only then add trackers, notifications, and SSO.
+</Check>

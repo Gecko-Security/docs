@@ -1,0 +1,94 @@
+---
+title: "Teams & Permissions"
+description: "Choose the right Gecko role for each person on your team and understand what each role can access."
+---
+
+## Choose the Right Role
+
+Gecko has four built-in team roles:
+
+- `Admin`
+- `Manager`
+- `Member`
+- `Read Only`
+
+Pick the narrowest role that still lets the person do their job. That keeps
+team settings safe without slowing down day-to-day scanning and remediation.
+
+## Who Should Get Each Role
+
+<Steps>
+<Step title="Use Admin for team owners">
+  Give `Admin` to the people who manage team settings, authentication, roles,
+  and broad platform configuration.
+</Step>
+<Step title="Use Manager for day-to-day security operations">
+  `Manager` is the best fit for people who run scans, manage repositories,
+  tune workflows, and handle remediation without owning identity or team
+  administration.
+</Step>
+<Step title="Use Member for normal scan and remediation work">
+  `Member` can run scans and work findings, but does not manage SSO, roles, or
+  repository configuration.
+</Step>
+<Step title="Use Read Only for visibility without mutation">
+  `Read Only` works for stakeholders who need access to scan results, settings,
+  and audit data without changing the team state.
+</Step>
+<Step title="Add SSO when the team is ready">
+  Once Gecko is part of the day-to-day workflow, formalize access through
+  [SSO & login](/access/okta-saml-onboarding).
+</Step>
+</Steps>
+
+## What Each Role Can Do
+
+<CardGroup cols={2}>
+  <Card title="Admin">
+    Full access across team settings, members, roles, identity, repositories,
+    scans, findings, integrations, and API keys.
+  </Card>
+  <Card title="Manager">
+    Manages the working security program: repositories, scans, findings,
+    schedules, workflows, rules, and integrations.
+  </Card>
+  <Card title="Member">
+    Runs scans, reviews findings, and helps fix issues, but cannot manage team
+    configuration, repositories, roles, or SSO.
+  </Card>
+  <Card title="Read Only">
+    Sees the platform, findings, settings, and audit information without making
+    changes.
+  </Card>
+</CardGroup>
+
+## Permission Matrix
+
+Use this table when you need to decide who should be able to manage something
+versus only view it.
+
+| Resource | Admin | Manager | Member | Read Only |
+| --- | --- | --- | --- | --- |
+| Team Settings | Manage | View | View | View |
+| Members | Manage | View | View | View |
+| Roles | Manage | View | View | View |
+| SSO / SCIM | Manage | View | No Access | View |
+| Repositories | Manage | Manage | View | View |
+| Scans | Manage | Manage | Manage | View |
+| Findings | Manage | Manage | Manage | View |
+| Rules | Manage | Manage | View | View |
+| Schedules | Manage | Manage | View | View |
+| Workflows | Manage | Manage | View | View |
+| Integrations | Manage | Manage | View | View |
+| API Keys | Manage | View | View | No Access |
+| Audit Log | View | View | View | View |
+
+## Important Limits
+
+- `Admin` is the only built-in role with `roles.manage` and `idp.manage`.
+- `Manager` can manage repositories, scans, findings, rules, schedules,
+  workflows, and integrations.
+- `Member` can run scans and manage finding state, but cannot manage
+  repositories or identity.
+- `Read Only` can view most resources, including SSO/SCIM and the audit log,
+  but cannot manage them.

@@ -1,0 +1,76 @@
+---
+title: "Quick Start"
+description: "Connect code, run a baseline scan, review the first findings, and understand what to expect from Gecko."
+---
+
+## What quick start means in Gecko
+
+The goal is not to configure every integration on day one.
+
+The goal is to get one real repository through the full Gecko loop:
+
+1. Connect code.
+2. Run a scan.
+3. Review the first findings.
+4. Fix one or two issues.
+5. Rescan and confirm the result.
+
+## Run your first scan
+
+<Steps>
+<Step title="Choose one repository you know well">
+  Start with a repository your team can validate quickly.
+
+  A first scan works best when the engineers reviewing it understand the code
+  and can make remediation decisions without extra coordination.
+</Step>
+
+<Step title="Connect GitHub or GitLab, or use a public OSS URL">
+  Use a connected private repository if you already have provider access in
+  Gecko.
+
+  If you are evaluating Gecko on public code, use a public GitHub or GitLab
+  repository URL instead.
+</Step>
+
+<Step title="Launch a baseline scan on the default branch">
+  Baseline scans are the easiest way to understand the current security state
+  of the codebase before you move to scheduled scans or narrower workflows.
+</Step>
+
+<Step title="Review the findings with a code owner">
+  Start with anything that touches authentication, authorization, secrets,
+  remote execution, or external network access.
+</Step>
+
+<Step title="Fix and rescan">
+  Apply the first safe fix, then rerun the scan so your team sees the complete
+  loop from discovery to verified remediation.
+</Step>
+</Steps>
+
+## What to expect
+
+<AccordionGroup>
+  <Accordion title="The first scan gives you a baseline, not a final program">
+    The first result set helps your team understand the codebase and calibrate
+    what should be fixed now versus tracked over time.
+  </Accordion>
+  <Accordion title="Some findings will be obvious and some will need validation">
+    Gecko gives evidence and context, but your team still owns the final call
+    on exploitability and business impact.
+  </Accordion>
+  <Accordion title="The workflow gets much better after the first rescan">
+    Once the team has seen one real remediation cycle, integrations and
+    automation start to pay off much more clearly.
+  </Accordion>
+  <Accordion title="You do not need SSO or ticketing on day one">
+    Start with the scan loop. Add authentication and workflow integrations after
+    the product is already useful to the team.
+  </Accordion>
+</AccordionGroup>
+
+<Check>
+  After quick start, move to [Use Gecko](/use-gecko) for the longer-term
+  operating workflow.
+</Check>

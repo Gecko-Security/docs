@@ -1,15 +1,17 @@
 ---
-title: 'Development'
-description: 'Preview changes locally to update your docs'
+title: "Render locally"
+description: "Preview Gecko docs with Mintlify, validate links, and iterate locally."
 ---
 
 <Info>
-  **Prerequisites**:
-  - Node.js version 19 or higher
-  - A docs repository with a `docs.json` file
+  **Prerequisites**
+  - Node.js `v20.17.0` or later
+  - Git
+  - This repo checked out locally
 </Info>
 
-Follow these steps to install and run Mintlify on your operating system.
+Use Mintlify's CLI to preview the docs, check your changes, and catch broken
+links before you push.
 
 <Steps>
 <Step title="Install the Mintlify CLI">
@@ -17,78 +19,55 @@ Follow these steps to install and run Mintlify on your operating system.
 ```bash
 npm i -g mint
 ```
+
+If you do not want a global install, use `npx mint dev` for a one-off preview.
 </Step>
 
-<Step title="Preview locally">
+<Step title="Start the local preview">
 
-Navigate to your docs directory where your `docs.json` file is located, and run the following command:
+From the repo root, where `docs.json` lives, run:
 
 ```bash
 mint dev
 ```
 
-A local preview of your documentation will be available at `http://localhost:3000`.
-
+Open `http://localhost:3000` in your browser. Mintlify reloads the preview when
+you save changes.
 </Step>
-</Steps>
 
-## Custom ports
-
-By default, Mintlify uses port 3000. You can customize the port Mintlify runs on by using the `--port` flag. For example, to run Mintlify on port 3333, use this command:
-
-```bash
-mint dev --port 3333
-```
-
-If you attempt to run Mintlify on a port that's already in use, it will use the next available port:
-
-```md
-Port 3000 is already in use. Trying 3001 instead.
-```
-
-## Mintlify versions
-
-Please note that each CLI release is associated with a specific version of Mintlify. If your local preview does not align with the production version, please update the CLI:
-
-```bash
-npm mint update
-```
-
-## Validating links
-
-The CLI can assist with validating links in your documentation. To identify any broken links, use the following command:
+<Step title="Validate links before you ship">
 
 ```bash
 mint broken-links
 ```
 
-## Deployment
+Run this after you add or rename pages so you catch bad internal links early.
+</Step>
+</Steps>
 
-If the deployment is successful, you should see the following:
+## Useful commands
 
-<Frame>
-  <img src="/images/checks-passed.png" alt="Screenshot of a deployment confirmation message that says All checks have passed." style={{ borderRadius: '0.5rem' }} />
-</Frame>
-
-## Code formatting
-
-We suggest using extensions on your IDE to recognize and format MDX. If you're a VSCode user, consider the [MDX VSCode extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx) for syntax highlighting, and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for code formatting.
+```bash
+mint dev --port 3333
+mint update
+npx mint dev
+```
 
 ## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title='Error: Could not load the "sharp" module using the darwin-arm64 runtime'>
-
-    This may be due to an outdated version of node. Try the following:
-    1. Remove the currently-installed version of the CLI: `npm remove -g mint`
-    2. Upgrade to Node v19 or higher.
-    3. Reinstall the CLI: `npm i -g mint`
+  <Accordion title="Port 3000 is already in use">
+    Run `mint dev --port 3333`. If you keep `3000`, Mintlify will try the next
+    open port automatically.
   </Accordion>
 
-  <Accordion title="Issue: Encountering an unknown error">
-  
-    Solution: Go to the root of your device and delete the `~/.mintlify` folder. Then run `mint dev` again.
+  <Accordion title="The local preview looks older than production">
+    Run `mint update`. If your local CLI is too old to support that command,
+    reinstall it with `npm i -g mint@latest`.
+  </Accordion>
+
+  <Accordion title='`mint version` shows `none`'>
+    Your network may be blocking Mintlify's client download. Ask your IT team
+    to allow `releases.mintlify.com`.
   </Accordion>
 </AccordionGroup>
-
-Curious about what changed in the latest CLI version? Check out the [CLI changelog](https://www.npmjs.com/package/mintlify?activeTab=versions).

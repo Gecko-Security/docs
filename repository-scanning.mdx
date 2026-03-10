@@ -1,0 +1,62 @@
+---
+title: "Repository Scanning"
+description: "Choose the right Gecko scan input and understand how repository onboarding works."
+---
+
+## Choose the right scan input
+
+Gecko supports a few practical ways to start analysis:
+
+<CardGroup cols={2}>
+  <Card title="GitHub">
+    Best for private repositories that already live in the normal engineering
+    workflow.
+  </Card>
+  <Card title="GitLab">
+    Best for GitLab-native teams that want repeatable repository-backed scans.
+  </Card>
+  <Card title="Public OSS URLs">
+    Best for evaluating Gecko on public GitHub or GitLab repositories without
+    a private provider connection.
+  </Card>
+  <Card title="ZIP uploads">
+    Best for point-in-time analysis when code is not available through a
+    supported provider.
+  </Card>
+</CardGroup>
+
+## Recommended rollout
+
+<Steps>
+<Step title="Connect one provider first">
+  Start with the code host your team already uses for private repositories.
+</Step>
+<Step title="Select one repository with clear ownership">
+  The first scan is easier to operationalize when the team already knows who
+  can validate and fix issues.
+</Step>
+<Step title="Run a baseline scan on the default branch">
+  Do not overcomplicate the first run with too many variables.
+</Step>
+<Step title="Expand after the first clean loop">
+  Once the team trusts the workflow, add more repositories, repeat scans, and
+  the rest of the integrations.
+</Step>
+</Steps>
+
+## When each option is the right fit
+
+<AccordionGroup>
+  <Accordion title="Use GitHub or GitLab for ongoing team workflows">
+    Provider-backed repositories are the best fit when you want repeatable
+    scans, durable repository records, and cleaner follow-up work.
+  </Accordion>
+  <Accordion title="Use public OSS URLs for evaluation or open-source targets">
+    Public URLs are useful when you need signal quickly without setting up a
+    private provider integration first.
+  </Accordion>
+  <Accordion title="Use ZIP uploads for one-off reviews">
+    ZIP uploads work when you need a point-in-time scan for code that is not
+    otherwise reachable through Gecko.
+  </Accordion>
+</AccordionGroup>

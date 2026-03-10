@@ -1,0 +1,32 @@
+---
+title: "Scanner Settings"
+description: "Configure Gecko scanning behavior and adopt settings in the right order."
+---
+
+## Configure settings after the core loop works
+
+The best rollout is simple:
+
+1. connect code
+2. run a baseline scan
+3. review and fix real issues
+4. then tune settings
+
+Settings matter, but only after the team understands the actual workflow.
+
+## What to tune first
+
+<CardGroup cols={2}>
+  <Card title="Repository selection">
+    Start with the repositories where the team can validate findings quickly.
+  </Card>
+  <Card title="Cadence">
+    Add repeat scans when the baseline workflow is already trusted.
+  </Card>
+  <Card title="Integrations">
+    Connect external systems only when findings are ready to move outside Gecko.
+  </Card>
+  <Card title="Authentication">
+    Add SSO and provisioning once the team is actively using the product.
+  </Card>
+</CardGroup>

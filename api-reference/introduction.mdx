@@ -1,33 +1,85 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API reference"
+description: "Authenticate with a Gecko API key, understand team scope and rate limits, and start using the v1 API."
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+<Info>
+  Gecko's `v1` API lets you launch scans and read scan, repository, and
+  vulnerability data for the team attached to your API key.
+</Info>
 
-## Welcome
+## Before you call the API
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+<Steps>
+<Step title="Create an API key">
+  Open **API Keys** in Gecko.
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+  Create a key for the team you want to query.
 
-## Authentication
+  Copy the full value when Gecko shows it. Gecko only shows the complete key at
+  creation time.
+</Step>
+<Step title="Send the key in the request header">
+  Add `X-API-Key: YOUR_API_KEY` to every authenticated request.
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+  Gecko API keys start with `gk_`.
+</Step>
+<Step title="Call the endpoint you need">
+  Use the generated endpoint pages in this section for request and response
+  details.
+</Step>
+</Steps>
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+## Send your first request
+
+```bash
+curl --request GET \
+  --url 'https://app.gecko.security/api/v1/scans?limit=10' \
+  --header 'X-API-Key: YOUR_API_KEY' \
+  --header 'Accept: application/json'
 ```
+
+## How access works
+
+- `GET /api/v1/health` is public.
+- All other `v1` endpoints require `X-API-Key`.
+- Gecko scopes every response to the team attached to your API key.
+- `GET /api/v1/scans` requires a key with `scans.read`.
+- `POST /api/v1/scans` requires a key with `scans.run`.
+- Scan creation also requires a configured GitLab integration for that team.
+
+<Tip>
+  Use the repository path as the `repositoryId` for repository vulnerability
+  requests, and URL-encode it first. For example, send
+  `gecko-security%2FPaperbaum` for `gecko-security/Paperbaum`.
+</Tip>
+
+## Rate limits
+
+- Gecko applies `1000` requests per hour to each API key.
+- Authenticated responses can include `X-RateLimit-Remaining` and
+  `X-RateLimit-Reset`.
+- Gecko returns `429 Too Many Requests` when a key reaches its current limit.
+
+## What you can do
+
+<CardGroup cols={2}>
+  <Card title="Scans" icon="radar">
+    List scans, launch a new scan, fetch scan vulnerabilities, and download scan
+    artifacts.
+  </Card>
+  <Card title="Repositories" icon="folder-git-2">
+    List repositories and fetch repository-level vulnerability data.
+  </Card>
+  <Card title="Vulnerabilities" icon="shield-alert">
+    Read vulnerabilities across every scan in the active team.
+  </Card>
+  <Card title="Artifacts" icon="file-code-2">
+    Fetch stored endpoint definitions and generated wiki output for a scan.
+  </Card>
+</CardGroup>
+
+<Check>
+  Need request and response details? Open any endpoint page in the API
+  Reference sidebar.
+</Check>
