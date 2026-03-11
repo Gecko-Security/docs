@@ -1,126 +1,33 @@
 ---
-title: "Gecko Security docs"
-description: "Connect your first repository, run scans, review findings, and configure the Gecko platform with the right integrations."
+title: "Gecko Security"
+description: "Find real vulnerabilities in your code. Fix what matters."
 ---
 
-<Info>
-  Gecko helps teams find real vulnerabilities in source code, review what
-  matters, and move remediation into the normal engineering workflow.
-</Info>
-
-These docs cover everything from connecting your first repository to setting up
-authentication and workflow integrations for a team.
-
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Quick start" icon="rocket" href="/quick-start">
-    Get scanning in minutes. Connect code, run a first baseline scan, and see
-    how Gecko presents findings.
+    Connect a repo, run your first scan, and review findings in minutes.
   </Card>
-  <Card title="API Reference" icon="braces" href="/api-reference/introduction">
-    Integrate Gecko into scripts, internal tooling, and workflow automation
-    with the `v1` API.
+  <Card title="SSO & SCIM" icon="shield" href="/access/okta-saml-onboarding">
+    Set up Okta SAML, verify login, and configure provisioning.
+  </Card>
+  <Card title="API reference" icon="code" href="/api-reference/introduction">
+    Automate scans and pull findings with the Gecko API.
   </Card>
 </CardGroup>
 
-## Get started
+## Guides
 
-<Columns cols={3}>
-  <Card
-    title="Quick start"
-    icon="rocket"
-    href="/quick-start"
-  >
-    Connect a repository, run a first baseline scan, review the results, and
-    understand what to expect in the first week.
-  </Card>
-  <Card
-    title="Scanning overview"
-    icon="radar"
-    href="/scanning-overview"
-  >
-    Understand the Gecko workflow from repository onboarding through triage,
-    remediation, and repeat scans.
-  </Card>
-  <Card
-    title="Platform"
-    icon="layout-panel-top"
-    href="/teams-permissions"
-  >
-    Manage team access, scanner settings, and the controls that shape how Gecko
-    runs across the organization.
-  </Card>
-</Columns>
-
-## Scanning products
-
-<CardGroup cols={3}>
-  <Card title="Scanning overview" icon="search" href="/scanning-overview">
-    Start with the full Gecko scan model and what to expect from the first
-    baseline run.
-  </Card>
-  <Card title="Repository scanning" icon="folder-git-2" href="/repository-scanning">
-    Connect GitHub, GitLab, public OSS targets, or ZIP uploads and choose the
-    right scan input for the job.
+<CardGroup cols={2}>
+  <Card title="Repository scanning" icon="magnifying-glass" href="/repository-scanning">
+    Connect GitHub, GitLab, public repos, or ZIP uploads.
   </Card>
   <Card title="Findings & remediation" icon="wrench" href="/findings-remediation">
-    Review evidence, prioritize risk, fix what matters, and confirm the result
-    with a fresh scan.
+    Triage results, fix issues, and verify with a rescan.
   </Card>
-</CardGroup>
-
-## Platform and integrations
-
-<Columns cols={3}>
-  <Card
-    title="Platform"
-    icon="settings-2"
-    href="/scanner-settings"
-  >
-    Configure scanner behavior, team workflows, and the operating settings that
-    make Gecko fit your environment.
+  <Card title="Teams & permissions" icon="users" href="/teams-permissions">
+    Roles, access control, and the permission matrix.
   </Card>
-  <Card
-    title="Integrations"
-    icon="plug"
-    href="/integrations"
-  >
-    Connect source control, ticketing, and notifications so findings move into
-    the tools your team already uses.
-  </Card>
-  <Card
-    title="Authentication"
-    icon="shield"
-    href="/access/okta-saml-onboarding"
-  >
-    Connect Okta, verify the first login, share the sign-in URL, and add SCIM
-    only after SSO works end to end.
-  </Card>
-</Columns>
-
-## What to expect from Gecko
-
-<CardGroup cols={3}>
-  <Card title="Fast setup" icon="rocket">
-    Most teams connect a code host, choose a repository, and launch a first
-    scan in minutes.
-  </Card>
-  <Card title="Actionable evidence" icon="search-check">
-    Every finding should give you code context, explanation, and enough detail
-    to decide whether to fix now, track, or dismiss.
-  </Card>
-  <Card title="Continuous workflow" icon="git-branch">
-    Gecko works best when you rerun scans after fixes, keep integrations
-    connected, and treat security reviews as part of normal delivery.
-  </Card>
-</CardGroup>
-
-## Resources
-
-<CardGroup cols={2}>
-  <Card title="Dashboard" icon="house" href="https://app.gecko.security">
-    Open Gecko to review scan results, findings, and team settings.
-  </Card>
-  <Card title="Render locally" icon="terminal" href="/development">
-    Preview docs changes with Mintlify and validate updates before they ship.
+  <Card title="Integrations" icon="plug" href="/integrations">
+    Jira, Linear, ClickUp, Shortcut, Slack, and GitLab exports.
   </Card>
 </CardGroup>

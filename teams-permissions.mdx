@@ -35,10 +35,6 @@ team settings safe without slowing down day-to-day scanning and remediation.
   `Read Only` works for stakeholders who need access to scan results, settings,
   and audit data without changing the team state.
 </Step>
-<Step title="Add SSO when the team is ready">
-  Once Gecko is part of the day-to-day workflow, formalize access through
-  [SSO & login](/access/okta-saml-onboarding).
-</Step>
 </Steps>
 
 ## What Each Role Can Do
@@ -83,12 +79,3 @@ versus only view it.
 | API Keys | Manage | View | View | No Access |
 | Audit Log | View | View | View | View |
 
-## Important Limits
-
-- `Admin` is the only built-in role with `roles.manage` and `idp.manage`.
-- `Manager` can manage repositories, scans, findings, rules, schedules,
-  workflows, and integrations.
-- `Member` can run scans and manage finding state, but cannot manage
-  repositories or identity.
-- `Read Only` can view most resources, including SSO/SCIM and the audit log,
-  but cannot manage them.
