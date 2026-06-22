@@ -3,25 +3,53 @@ title: "Integrations"
 description: "Connect Gecko to source control, issue trackers, and notifications."
 ---
 
-All integrations are configured in **Settings**.
+All integrations are configured in **Settings**. Connect source control first;
+it's what makes the rest of the workflow click into place.
+
+## Source control
 
 <CardGroup cols={2}>
-  <Card title="GitHub & GitLab" icon="code-branch" href="/github-gitlab-integration">
-    Connect source control so repositories appear directly in the scan flow.
+  <Card title="GitHub" icon="github" href="/connect/github">
+    GitHub App for GitHub.com, plus GitHub Enterprise Server via token.
   </Card>
-  <Card title="Jira" icon="ticket" href="/jira-integration">
-    Send validated findings into Jira for remediation tracking.
-  </Card>
-  <Card title="Linear" icon="list" href="/linear-integration">
-    Push findings into your Linear backlog.
-  </Card>
-  <Card title="Slack" icon="bell" href="/slack-integration">
-    Get scan notifications and follow-up nudges in Slack.
+  <Card title="GitLab" icon="gitlab" href="/connect/gitlab">
+    GitLab.com, self-managed, and GitLab Dedicated via access token.
   </Card>
 </CardGroup>
 
-### Also available
+## Issue trackers
 
-- **ClickUp** — **Settings > ClickUp**. Track remediation alongside your team's existing work.
-- **Shortcut** — **Settings > Shortcut**. Route findings into Shortcut stories.
-- **GitLab vulnerability export** — **Settings > GitLab vulnerabilities**. Surface findings in GitLab-native security dashboards.
+Push validated findings into the tool your team already plans in. Each tracker
+supports an **auto-create** option to file work for findings after every scan.
+
+<CardGroup cols={2}>
+  <Card title="Jira" icon="jira" href="/jira-integration">
+    Project, board, sprint, issue type, assignee, and status mapping.
+  </Card>
+  <Card title="Linear" icon="list-check" href="/linear-integration">
+    Team, project, assignee, labels, and severity-to-priority mapping.
+  </Card>
+  <Card title="ClickUp" icon="list" href="/clickup-integration">
+    Space and list targeting with auto-created tasks.
+  </Card>
+  <Card title="Shortcut" icon="forward" href="/shortcut-integration">
+    Route findings into Shortcut stories by group.
+  </Card>
+</CardGroup>
+
+## Notifications
+
+<CardGroup cols={2}>
+  <Card title="Slack" icon="slack" href="/slack-integration">
+    Scan notifications routed per repository, filtered by severity.
+  </Card>
+  <Card title="GitLab vulnerability export" icon="shield-halved" href="/gitlab-vulnerability-export">
+    Surface findings in GitLab's native Security Dashboard.
+  </Card>
+</CardGroup>
+
+<Note>
+  Most issue-tracker integrations connect over OAuth; Shortcut uses an API token.
+  Connecting requires the Admin or Manager role. See
+  [Teams & permissions](/teams-permissions).
+</Note>

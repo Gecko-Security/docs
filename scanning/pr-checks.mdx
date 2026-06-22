@@ -1,0 +1,51 @@
+---
+title: "Pull request checks"
+description: "Scan every pull and merge request, post a review summary, and block risky merges."
+---
+
+When a pull request (GitHub) or merge request (GitLab) is opened or updated,
+Gecko runs a [PR scan](/concepts/scans): a single agent reads the whole diff and
+classifies each finding as **new**, **persisting**, or **fixed**. PR scans reuse
+the latest [wiki](/concepts/repository-wiki), so they're fast.
+
+## What you get on a PR
+
+<CardGroup cols={2}>
+  <Card title="Check run result" icon="circle-check">
+    Gecko posts a pass/fail check back to GitHub or GitLab so reviewers see the
+    security status inline.
+  </Card>
+  <Card title="Review summary" icon="file-lines">
+    A security-focused summary of the changed files that matter, explained in the
+    context of your application's architecture.
+  </Card>
+  <Card title="New vs. existing" icon="code-compare">
+    Findings introduced by the PR are separated from pre-existing ones, so
+    reviewers focus on what the change adds.
+  </Card>
+  <Card title="Inline fixes" icon="wand-magic-sparkles">
+    Gecko can commit a fix directly to the PR branch. See
+    [Auto-fix PRs](/remediation/auto-fix-prs).
+  </Card>
+</CardGroup>
+
+## Configure PR behavior
+
+Go to **Settings** &gt; **Pull Requests** to control:
+
+- **Trigger**: whether PR/MR scans run automatically.
+- **Fail-on severity**: the severity threshold that fails the check (for
+  example, fail on High and above).
+- **Review summary**: whether Gecko posts the summary comment.
+- **Auto-fix**: whether Gecko offers or commits fixes on PRs.
+- **Fix branch prefix**: the branch prefix for fix PRs (default `gecko-fix/`).
+
+<Tip>
+  Start with the check in a non-blocking mode while your team gets used to the
+  signal, then raise the fail-on-severity threshold once findings are trusted.
+</Tip>
+
+## Prerequisites
+
+PR checks require a connected [provider](/connect/github) and a
+[webhook](/connect/webhooks) with pull/merge request events enabled.

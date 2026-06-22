@@ -32,12 +32,34 @@ description: "Authenticate with a Gecko API key, understand team scope and rate 
 
 ## Send your first request
 
-```bash
-curl --request GET \
-  --url 'https://app.gecko.security/api/v1/scans?limit=10' \
-  --header 'X-API-Key: YOUR_API_KEY' \
-  --header 'Accept: application/json'
+<CodeGroup>
+```bash cURL
+curl https://app.gecko.security/api/v1/scans?limit=10 \
+  -H "X-API-Key: $GECKO_API_KEY" \
+  -H "Accept: application/json"
 ```
+
+```python Python
+import requests
+
+res = requests.get(
+    "https://app.gecko.security/api/v1/scans",
+    params={"limit": 10},
+    headers={"X-API-Key": "YOUR_API_KEY"},
+)
+res.raise_for_status()
+print(res.json())
+```
+
+```javascript JavaScript
+const res = await fetch(
+  "https://app.gecko.security/api/v1/scans?limit=10",
+  { headers: { "X-API-Key": process.env.GECKO_API_KEY, Accept: "application/json" } },
+);
+const data = await res.json();
+console.log(data);
+```
+</CodeGroup>
 
 ## How access works
 

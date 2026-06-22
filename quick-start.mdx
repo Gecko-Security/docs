@@ -1,30 +1,69 @@
 ---
 title: "Quick start"
-description: "Connect a repository, run your first scan, and review findings."
+description: "Connect a repository, run your first scan, and review real findings in minutes."
 ---
+
+This guide takes you through one complete loop: connect code, scan, triage, fix,
+and verify.
 
 <Steps>
 <Step title="Connect a repository">
-  Go to the dashboard and connect GitHub or GitLab via **Settings > Git Settings**.
+  Open the [dashboard](https://app.gecko.security) and go to **Settings** &gt;
+  **Code Settings**.
 
-  If you're evaluating Gecko on public code, paste a public repository URL instead.
+  - **GitHub**: install the Gecko GitHub App and pick repositories. See
+    [Connect GitHub](/connect/github).
+  - **GitLab**: add a GitLab access token and instance URL. See
+    [Connect GitLab](/connect/gitlab).
+
+  Evaluating Gecko on open source? Paste a public repository URL or upload a ZIP
+  instead. No provider connection required. See [Other inputs](/connect/other-inputs).
+
+  <Note>
+    Self-managed GitLab or an IP-restricted network? Allowlist Gecko's IP
+    addresses first, or the connection will fail. See [Network & IP allowlist](/connect/network-allowlist).
+  </Note>
 </Step>
 
 <Step title="Run a baseline scan">
-  Pick a repository your team knows well. Run a scan on the default branch.
+  Pick a repository your team knows well and scan the default branch.
 
-  This gives you the current security picture before layering in more workflow.
+  This builds a [repository wiki](/concepts/repository-wiki), maps your
+  [API endpoints](/concepts/api-spec), and produces your first set of findings:
+  the security baseline you'll improve from.
 </Step>
 
 <Step title="Review findings">
-  Start with anything touching auth, secrets, remote execution, or external network access.
+  Open the **Vulnerabilities** tab. Each finding includes a severity (CVSS 4.0),
+  a confidence score, the full [source-to-sink call chain](/concepts/findings),
+  a proof of concept, and a suggested patch.
 
-  Each finding includes code context, explanation, and remediation guidance.
+  Start with anything touching auth, secrets, remote execution, or external
+  network access.
 </Step>
 
-<Step title="Fix and rescan">
-  Apply a fix, then rerun the scan to confirm the issue is resolved.
+<Step title="Fix and verify">
+  Click **Request fix** to open a `gecko-fix/*` pull request with the patch
+  applied, or apply the patch yourself. See [Auto-fix PRs](/remediation/auto-fix-prs).
+
+  When the fix merges, Gecko rechecks the finding and marks it **Fix verified**
+  once the vulnerability is gone.
 </Step>
 </Steps>
 
-After your first scan loop works, add [integrations](/integrations), [team roles](/teams-permissions), and [SSO](/access/okta-saml-onboarding).
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Turn on PR checks" icon="code-pull-request" href="/scanning/pr-checks">
+    Scan every pull request and block merges above a severity threshold.
+  </Card>
+  <Card title="Route findings to your tools" icon="plug" href="/integrations">
+    Jira, Linear, Slack, ClickUp, and Shortcut.
+  </Card>
+  <Card title="Invite your team" icon="users" href="/teams-permissions">
+    Roles and the permission matrix.
+  </Card>
+  <Card title="Set up SSO" icon="key" href="/access/okta-saml-onboarding">
+    Okta SAML and SCIM provisioning.
+  </Card>
+</CardGroup>

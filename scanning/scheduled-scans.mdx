@@ -1,0 +1,35 @@
+---
+title: "Scheduled scans"
+description: "Keep the baseline fresh with recurring full scans."
+---
+
+Scheduled scans run a full scan on a recurring cadence so your security baseline
+stays current as the codebase changes.
+
+## How they work
+
+Each scheduled run is a [full scan](/concepts/scans) and updates the
+repository's **baseline commit**. Comparing against the baseline is how Gecko
+separates genuinely new issues from pre-existing ones between runs.
+
+<Steps>
+<Step title="Pick a cadence">
+  Choose a schedule that matches how fast the repository changes: daily for
+  active services, weekly for slower-moving code.
+</Step>
+<Step title="Let it establish a baseline">
+  The first scheduled run sets the baseline. Subsequent runs highlight what's
+  new since then.
+</Step>
+<Step title="Route the results">
+  Combine scheduled scans with [Slack](/slack-integration) notifications or
+  [issue-tracker](/integrations) auto-create so new findings reach the right
+  people automatically.
+</Step>
+</Steps>
+
+<Tip>
+  Pair scheduled scans (full-codebase coverage over time) with
+  [PR checks](/scanning/pr-checks) (catch issues before merge) for full
+  coverage.
+</Tip>

@@ -1,0 +1,29 @@
+---
+title: "Rules"
+description: "Tune which findings surface for your team."
+---
+
+The **Rules** page lets you tune how findings are surfaced and managed for your
+team, so the results match your environment and risk tolerance.
+
+## When to adjust rules
+
+<CardGroup cols={2}>
+  <Card title="After your first clean loop" icon="flag-checkered">
+    Run a baseline, triage it, and only then tune, so you're adjusting against
+    real results, not assumptions.
+  </Card>
+  <Card title="When context changes the risk" icon="sliders">
+    If a class of finding consistently doesn't apply to your environment, tune it
+    rather than dismissing each one by hand.
+  </Card>
+</CardGroup>
+
+<Note>
+  Rules are managed by Admins and Managers; Members and Read Only roles can view
+  them. See [Teams & permissions](/teams-permissions).
+</Note>
+
+Prefer per-finding triage for one-off cases: mark a finding **False positive**
+or **Accepted risk** from the finding drawer. Use rules when you want a
+consistent policy across many findings. See [Findings](/concepts/findings).

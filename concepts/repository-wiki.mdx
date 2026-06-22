@@ -1,0 +1,39 @@
+---
+title: "Repository wiki"
+description: "The AI-generated map of your codebase that powers accurate analysis."
+---
+
+During a full scan, Gecko generates a **wiki**, a structured, AI-written guide
+to your repository. It's both a deliverable you can read and the shared context
+that makes the analysis agent accurate.
+
+## What's in it
+
+The wiki is built by exploring your code and capturing:
+
+- **Overview**: what the application does.
+- **Architecture**: major components and how they fit together.
+- **API routing**: how requests reach handlers.
+- **Security architecture**: auth, trust boundaries, and sensitive flows.
+- **Data & state**: where data lives and how it moves.
+- **Core modules**: the most important parts of the codebase.
+- **Deployment**: how the application runs.
+
+## Why it matters
+
+A vulnerability is only meaningful in context. By reading the wiki first, the
+analysis agent understands which inputs are attacker-controlled, where trust
+boundaries sit, and which sinks actually matter, which is why Gecko can
+distinguish a real exploit path from a theoretical one.
+
+## How it's reused
+
+<Note>
+  Pull-request scans do **not** regenerate the wiki. They reuse the latest
+  persisted wiki read-only, which keeps PR scans fast while preserving full
+  application context.
+</Note>
+
+You can read the wiki from the **Wiki** tab on any repository, or for a specific
+scan from the scan detail view. It's also available through the
+[API](/api-reference/introduction).

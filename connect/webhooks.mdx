@@ -1,0 +1,61 @@
+---
+title: "Webhooks"
+description: "Events, secrets, and signature verification for GitHub, GitHub Enterprise, and GitLab."
+---
+
+Webhooks let Gecko react to activity in your repositories, running a
+[PR scan](/scanning/pr-checks) when a pull or merge request opens, and tracking
+pushes. Gecko generates the webhook URL and secret when you connect a provider;
+you add them in your provider's settings.
+
+## Endpoints, events, and verification
+
+| Provider | Webhook URL | Events | Verification |
+| --- | --- | --- | --- |
+| GitHub.com | `https://app.gecko.security/api/github/webhook` | `pull_request`, `issue_comment`, `push` | `X-Hub-Signature-256` (HMAC-SHA256) |
+| GitHub Enterprise | `https://app.gecko.security/api/github-enterprise/webhook` | Pull requests, Pushes | `X-Hub-Signature-256` (per-connection secret) |
+| GitLab | `https://app.gecko.security/api/gitlab/webhook` | Merge request, Push, Note (MR comments), Vulnerability | `X-Gitlab-Token` (shared secret) |
+
+<Note>
+  Always use the exact URL and secret shown in Gecko when you connect the
+  provider; secrets are generated per team (GitHub/GitLab) or per connection
+  (GitHub Enterprise).
+</Note>
+
+## GitHub & GitHub Enterprise
+
+GitHub signs each delivery with an HMAC-SHA256 signature in the
+`X-Hub-Signature-256` header. Gecko verifies it against the webhook secret and
+supports multiple secrets at once, so you can rotate without downtime. For GHES,
+set the content type to `application/json`.
+
+## GitLab
+
+GitLab sends your **secret token** verbatim in the `X-Gitlab-Token` header.
+Gecko compares it against the per-team secret generated at connection time.
+
+<Tip>
+  Enable **Vulnerability events** in GitLab if you want findings to flow into
+  GitLab's Security Dashboard via [vulnerability export](/gitlab-vulnerability-export).
+</Tip>
+
+## Network direction
+
+Webhooks are **outbound from your instance to Gecko** at `app.gecko.security`.
+This is the opposite direction from cloning and API calls. Your network must be
+able to reach `app.gecko.security` on HTTPS, but webhooks don't require you to
+allowlist Gecko's IP addresses; those are for the
+[outbound paths](/connect/network-allowlist).
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Deliveries fail with 401 or 403">
+    The secret doesn't match. Re-copy the secret from Gecko into the provider's
+    secret field.
+  </Accordion>
+  <Accordion title="No PR scans are triggering">
+    Confirm the right events are enabled (pull/merge request and push) and that
+    the webhook delivery log in your provider shows `2xx` responses.
+  </Accordion>
+</AccordionGroup>

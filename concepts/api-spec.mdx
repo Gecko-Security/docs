@@ -1,0 +1,39 @@
+---
+title: "Endpoints & API spec"
+description: "The HTTP attack surface Gecko discovers in your application."
+---
+
+Alongside vulnerabilities, every full scan discovers your application's HTTP
+**endpoints** and assembles them into an **API spec**.
+
+## What it captures
+
+An agent reads your routing and handler code and produces a structured spec of
+the endpoints your application exposes, the real entry points where
+attacker-controlled input arrives. This map feeds the analysis stage so the
+agent knows where to start tracing data flow.
+
+## Why it's useful
+
+<CardGroup cols={2}>
+  <Card title="Attack surface at a glance" icon="crosshairs">
+    See every route the scanner found, so you know what's reachable from outside.
+  </Card>
+  <Card title="Better findings" icon="bullseye">
+    Knowing the entry points lets Gecko connect external input to internal sinks
+    more accurately.
+  </Card>
+</CardGroup>
+
+## Where to find it
+
+- **Repository → Endpoints tab**: endpoints from the latest scan.
+- **Scan detail → Endpoints**: endpoints for a specific scan.
+- **[API](/api-reference/introduction)**: fetch the stored endpoint definitions
+  for a scan programmatically.
+
+<Note>
+  Some teams run Gecko in an endpoint-discovery-focused mode where the API spec
+  is the primary output. If that applies to your team, your dashboard emphasizes
+  the Endpoints view.
+</Note>

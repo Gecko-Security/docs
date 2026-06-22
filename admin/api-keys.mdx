@@ -1,0 +1,74 @@
+---
+title: "API keys"
+description: "Create and manage keys for the Gecko v1 API."
+---
+
+API keys authenticate requests to the [Gecko v1 API](/api-reference/introduction).
+Keys are scoped to the team they're created in. Manage them in **Settings** &gt;
+**API Keys**.
+
+<Note>
+  API access is a Pro/Enterprise feature.
+</Note>
+
+## Create a key
+
+<Steps>
+<Step title="Open API Keys">
+  Go to **Settings** &gt; **API Keys** and click **Create API Key**.
+</Step>
+<Step title="Name it">
+  Give the key a descriptive name, such as `CI/CD Pipeline` or `Production`.
+</Step>
+<Step title="Copy the key now">
+  Gecko shows the full key value **once**, at creation. Copy and store it
+  securely; afterward only a masked preview is shown.
+</Step>
+</Steps>
+
+## Use a key
+
+Send the key in the `X-API-Key` header on every authenticated request:
+
+<CodeGroup>
+```bash cURL
+curl https://app.gecko.security/api/v1/scans?limit=10 \
+  -H "X-API-Key: $GECKO_API_KEY" \
+  -H "Accept: application/json"
+```
+
+```python Python
+import requests
+
+res = requests.get(
+    "https://app.gecko.security/api/v1/scans",
+    params={"limit": 10},
+    headers={"X-API-Key": "YOUR_API_KEY"},
+)
+res.raise_for_status()
+print(res.json())
+```
+
+```javascript JavaScript
+const res = await fetch(
+  "https://app.gecko.security/api/v1/scans?limit=10",
+  { headers: { "X-API-Key": process.env.GECKO_API_KEY, Accept: "application/json" } },
+);
+const data = await res.json();
+console.log(data);
+```
+</CodeGroup>
+
+Gecko scopes every response to the team attached to the key. See the
+[API reference](/api-reference/introduction) for endpoints, rate limits, and
+examples.
+
+## Manage and revoke
+
+The API Keys table shows each key's name, masked preview, creation date, and
+last-used time. Delete a key to revoke it immediately.
+
+<Warning>
+  Deleting a key takes effect right away. Rotate by creating the new key first,
+  updating your integration, then deleting the old one.
+</Warning>

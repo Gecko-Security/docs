@@ -1,33 +1,96 @@
 ---
 title: "Gecko Security"
-description: "Find real vulnerabilities in your code. Fix what matters."
+description: "An AI security engineer that finds real, exploitable vulnerabilities in your code, and ships the fix."
+mode: "custom"
 ---
 
+<div className="mx-auto w-full max-w-5xl px-6 pb-24">
+
+<div className="flex flex-col items-center text-center pt-16 pb-10">
+<img className="h-11 block dark:hidden" src="/logo/light.svg" alt="Gecko Security" noZoom />
+<img className="h-11 hidden dark:block" src="/logo/dark.svg" alt="Gecko Security" noZoom />
+<p className="mt-7 max-w-xl text-lg text-gray-500 dark:text-gray-400">
+Find real, exploitable vulnerabilities in your code. Fix what matters.
+</p>
+<div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+<a href="/quick-start" className="rounded-full bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white no-underline transition hover:opacity-90">Get started</a>
+<a href="/how-gecko-works" className="rounded-full border border-gray-200 px-5 py-2.5 text-sm font-semibold no-underline transition hover:bg-gray-100 dark:border-white/15 dark:hover:bg-white/5">How it works</a>
+</div>
+</div>
+
+<h2 className="mt-6 mb-1 text-xl font-semibold">Get started</h2>
+<p className="mb-5 text-gray-500 dark:text-gray-400">Connect a repository and review real findings in minutes.</p>
+
 <CardGroup cols={3}>
-  <Card title="Quick start" icon="rocket" href="/quick-start">
-    Connect a repo, run your first scan, and review findings in minutes.
+  <Card title="Quick start" icon="rocket" href="/quick-start" horizontal>
+    Connect, scan, triage, fix.
   </Card>
-  <Card title="SSO & SCIM" icon="shield" href="/access/okta-saml-onboarding">
-    Set up Okta SAML, verify login, and configure provisioning.
+  <Card title="How Gecko works" icon="diagram-project" href="/how-gecko-works" horizontal>
+    The agent pipeline, end to end.
   </Card>
-  <Card title="API reference" icon="code" href="/api-reference/introduction">
-    Automate scans and pull findings with the Gecko API.
+  <Card title="Connect your code" icon="code-branch" href="/connect/github" horizontal>
+    GitHub, GitLab, or a public URL.
   </Card>
 </CardGroup>
 
-## Guides
+<h2 className="mt-14 mb-1 text-xl font-semibold">Understand & fix findings</h2>
+<p className="mb-5 text-gray-500 dark:text-gray-400">What Gecko reports, and how to drive it to zero.</p>
 
 <CardGroup cols={2}>
-  <Card title="Repository scanning" icon="magnifying-glass" href="/repository-scanning">
-    Connect GitHub, GitLab, public repos, or ZIP uploads.
+  <Card title="Findings explained" icon="book" href="/concepts/findings">
+    Confidence, severity, call chains, and the status lifecycle.
   </Card>
-  <Card title="Findings & remediation" icon="wrench" href="/findings-remediation">
-    Triage results, fix issues, and verify with a rescan.
+  <Card title="Deep vs PR scans" icon="layer-group" href="/concepts/scans">
+    Thorough deep scans, multi-repo, and fast PR checks.
   </Card>
-  <Card title="Teams & permissions" icon="users" href="/teams-permissions">
-    Roles, access control, and the permission matrix.
+  <Card title="Triage & remediation" icon="wrench" href="/findings-remediation">
+    Prioritize, fix the root cause, and verify with a rescan.
   </Card>
-  <Card title="Integrations" icon="plug" href="/integrations">
-    Jira, Linear, ClickUp, Shortcut, Slack, and GitLab exports.
+  <Card title="Auto-fix PRs" icon="wand-magic-sparkles" href="/remediation/auto-fix-prs">
+    Ship Gecko's patch as a pull request in one click.
   </Card>
 </CardGroup>
+
+<h2 className="mt-14 mb-1 text-xl font-semibold">Connect your code</h2>
+<p className="mb-5 text-gray-500 dark:text-gray-400">Bring source control in, including self-managed GitLab behind a firewall.</p>
+
+<CardGroup cols={2}>
+  <Card title="Connect GitHub" icon="github" href="/connect/github">
+    GitHub App for GitHub.com, plus GitHub Enterprise Server.
+  </Card>
+  <Card title="Connect GitLab" icon="gitlab" href="/connect/gitlab">
+    GitLab.com, self-managed, and GitLab Dedicated.
+  </Card>
+  <Card title="Network & IP allowlist" icon="shield-halved" href="/connect/network-allowlist">
+    The IPs to allow for IP-restricted instances.
+  </Card>
+  <Card title="Pull request checks" icon="code-pull-request" href="/scanning/pr-checks">
+    Scan every PR and block risky merges.
+  </Card>
+</CardGroup>
+
+<h2 className="mt-14 mb-1 text-xl font-semibold">Operate & extend</h2>
+<p className="mb-5 text-gray-500 dark:text-gray-400">Run Gecko across your org and wire it into your stack.</p>
+
+<CardGroup cols={2}>
+  <Card title="Deployment models" icon="server" href="/deployment/architecture">
+    Cloud and hybrid, and what each means for network access.
+  </Card>
+  <Card title="Teams & permissions" icon="users" href="/teams-permissions">
+    Roles and the permission matrix.
+  </Card>
+  <Card title="SSO & SCIM" icon="key" href="/access/okta-saml-onboarding">
+    Okta SAML and automated provisioning.
+  </Card>
+  <Card title="Integrations" icon="plug" href="/integrations">
+    Jira, Linear, Slack, ClickUp, and Shortcut.
+  </Card>
+  <Card title="API reference" icon="code" href="/api-reference/introduction">
+    Automate scans and pull findings with the v1 API.
+  </Card>
+  <Card title="Billing & plans" icon="credit-card" href="/admin/billing">
+    Plans, usage, and feature availability.
+  </Card>
+</CardGroup>
+
+</div>

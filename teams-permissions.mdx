@@ -1,81 +1,69 @@
 ---
-title: "Teams & Permissions"
-description: "Choose the right Gecko role for each person on your team and understand what each role can access."
+title: "Teams & permissions"
+description: "Roles, the permission matrix, and how to invite your team."
 ---
 
-## Choose the Right Role
+Gecko has four built-in roles. Give each person the narrowest role that still
+lets them do their job.
 
-Gecko has four built-in team roles:
-
-- `Admin`
-- `Manager`
-- `Member`
-- `Read Only`
-
-Pick the narrowest role that still lets the person do their job. That keeps
-team settings safe without slowing down day-to-day scanning and remediation.
-
-## Who Should Get Each Role
-
-<Steps>
-<Step title="Use Admin for team owners">
-  Give `Admin` to the people who manage team settings, authentication, roles,
-  and broad platform configuration.
-</Step>
-<Step title="Use Manager for day-to-day security operations">
-  `Manager` is the best fit for people who run scans, manage repositories,
-  tune workflows, and handle remediation without owning identity or team
-  administration.
-</Step>
-<Step title="Use Member for normal scan and remediation work">
-  `Member` can run scans and work findings, but does not manage SSO, roles, or
-  repository configuration.
-</Step>
-<Step title="Use Read Only for visibility without mutation">
-  `Read Only` works for stakeholders who need access to scan results, settings,
-  and audit data without changing the team state.
-</Step>
-</Steps>
-
-## What Each Role Can Do
+## Roles
 
 <CardGroup cols={2}>
-  <Card title="Admin">
-    Full access across team settings, members, roles, identity, repositories,
-    scans, findings, integrations, and API keys.
+  <Card title="Admin" icon="user-shield">
+    Team owners. Full control of settings, members, roles, identity (SSO/SCIM),
+    repositories, scans, findings, integrations, and API keys.
   </Card>
-  <Card title="Manager">
-    Manages the working security program: repositories, scans, findings,
-    schedules, workflows, rules, and integrations.
+  <Card title="Manager" icon="user-gear">
+    Runs the security program day to day: members, repositories, scans, findings,
+    schedules, workflows, rules, and integrations, without owning identity.
   </Card>
-  <Card title="Member">
-    Runs scans, reviews findings, and helps fix issues, but cannot manage team
-    configuration, repositories, roles, or SSO.
+  <Card title="Member" icon="user">
+    Does the work: runs scans and triages findings, but doesn't manage team
+    configuration, roles, SSO, or integrations.
   </Card>
-  <Card title="Read Only">
-    Sees the platform, findings, settings, and audit information without making
-    changes.
+  <Card title="Read Only" icon="eye">
+    Visibility without mutation, for stakeholders who need to see results and
+    settings but not change them.
   </Card>
 </CardGroup>
 
-## Permission Matrix
+## Permission matrix
 
-Use this table when you need to decide who should be able to manage something
-versus only view it.
+**Manage** = read and write · **View** = read only · **None** = no access.
 
 | Resource | Admin | Manager | Member | Read Only |
 | --- | --- | --- | --- | --- |
-| Team Settings | Manage | View | View | View |
-| Members | Manage | View | View | View |
-| Roles | Manage | View | View | View |
-| SSO / SCIM | Manage | View | No Access | View |
+| Team settings | Manage | View | None | None |
+| Members | Manage | Manage | None | None |
+| Roles | Manage | View | None | None |
+| SSO / SCIM | Manage | View | None | None |
 | Repositories | Manage | Manage | View | View |
 | Scans | Manage | Manage | Manage | View |
-| Findings | Manage | Manage | Manage | View |
+| Vulnerabilities | Manage | Manage | Manage | View |
 | Rules | Manage | Manage | View | View |
-| Schedules | Manage | Manage | View | View |
-| Workflows | Manage | Manage | View | View |
-| Integrations | Manage | Manage | View | View |
-| API Keys | Manage | View | View | No Access |
-| Audit Log | View | View | View | View |
+| Schedules | Manage | Manage | Manage | View |
+| Workflows | Manage | Manage | None | None |
+| Integrations | Manage | Manage | None | None |
+| API keys | Manage | View | View | View |
+| Audit log | None | View | None | None |
 
+## Invite members
+
+<Steps>
+<Step title="Send an invite">
+  In **Settings** &gt; **Members**, invite a teammate by email and assign a role.
+</Step>
+<Step title="They accept">
+  The invite links to a join page showing your team. After signing in, they
+  accept and land in the workspace.
+</Step>
+<Step title="Adjust roles any time">
+  Change a member's role from the Members page as responsibilities shift.
+</Step>
+</Steps>
+
+<Tip>
+  For larger teams, manage membership and roles automatically through
+  [SCIM provisioning](/access/okta-saml-onboarding) instead of inviting people
+  one by one.
+</Tip>

@@ -1,0 +1,73 @@
+---
+title: "Scans"
+description: "Deep scans vs PR scans, single- vs multi-repo, and scheduled runs."
+---
+
+A **scan** analyzes your code and produces findings, a
+[wiki](/concepts/repository-wiki), and an [endpoint map](/concepts/api-spec).
+Two things define any scan:
+
+- **How deep**: a thorough **deep scan**, or a fast **PR scan** of just the diff.
+- **How many repos**: a single repository, or several at once (**multi-repo**).
+
+## Deep scans vs PR scans
+
+This is the core distinction. A deep scan analyzes everything; a PR scan
+analyzes only what changed.
+
+| | Deep scan | PR scan |
+| --- | --- | --- |
+| **Triggered by** | You, on demand or on a [schedule](/scanning/scheduled-scans) | A pull or merge request opening or updating |
+| **Analyzes** | The whole branch | Only the diff |
+| **Pipeline** | Full: wiki, index, endpoints, then analysis | One agent over the diff; reuses the latest wiki |
+| **Repos** | One or many (multi-repo) | The one repo the PR belongs to |
+| **Speed** | Thorough | Fast |
+| **Best for** | Your baseline and ongoing coverage | Catching issues before merge |
+
+<Note>
+  A PR scan classifies each finding as **new**, **persisting**, or **fixed**
+  relative to the branch, so reviewers see exactly what the change introduces.
+  See [PR checks](/scanning/pr-checks).
+</Note>
+
+## Single-repo and multi-repo
+
+Scope is a property of a **deep scan**: it can cover one repository or several in
+a single run.
+
+<CardGroup cols={2}>
+  <Card title="Single-repo" icon="folder">
+    A deep scan of one repository. The common case for most workflows.
+  </Card>
+  <Card title="Multi-repo" icon="folder-tree">
+    One deep scan across several repositories at once, ideal for a service split
+    across repos, or a portfolio you want to assess together. Findings roll up
+    across every repo the scan touched.
+  </Card>
+</CardGroup>
+
+<Tip>
+  Multi-repo is a deep-scan capability. PR scans are always scoped to the single
+  repository the pull or merge request belongs to.
+</Tip>
+
+## Scheduled scans
+
+A **scheduled scan** is just a deep scan on a recurring cadence (and it can be
+multi-repo). Each run updates the repository's **baseline commit**, which is how
+Gecko tells genuinely new issues apart from pre-existing ones. See
+[Scheduled scans](/scanning/scheduled-scans).
+
+## Fix recheck
+
+A lightweight re-evaluation of previously open findings to confirm whether each
+is now gone. It's how Gecko marks a finding **Fix verified** after a merge. It
+doesn't run the full pipeline. See [Auto-fix PRs](/remediation/auto-fix-prs).
+
+## Where scans live
+
+- **Repository → Scans tab**: every scan for one repository, filtered by all /
+  PR / scheduled.
+- **Scans** (top-level): all scans across the team.
+- **Scan detail**: the full findings table for one scan, plus its wiki and
+  endpoints. Multi-repo scans show every repository they covered.

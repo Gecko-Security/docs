@@ -1,9 +1,44 @@
 ---
-title: "Jira integration"
-description: "Send validated Gecko findings into Jira when remediation needs to move into team planning."
+title: "Jira"
+description: "File Gecko findings as Jira issues and keep status in sync."
 ---
 
-Use **Settings** &gt; **Jira** when your team tracks remediation work in Jira.
+Connect Jira to turn validated findings into tracked work in your team's
+planning tool. Configure it in **Settings** &gt; **Jira**.
 
-Connect Jira after the team already knows how it wants to triage findings. That
-keeps the integration useful instead of noisy.
+## Connect
+
+<Steps>
+<Step title="Authorize Jira">
+  Click **Connect** and complete the Jira OAuth flow. You'll return to Gecko with
+  the connection active.
+</Step>
+<Step title="Choose where issues go">
+  Select a **project**, and optionally a **board** and **sprint** behavior
+  (current sprint, a specific sprint, or backlog).
+</Step>
+<Step title="Set issue defaults">
+  Pick the **issue type** (Story, Bug, or Task), a **default assignee**, and any
+  **labels**. Gecko always adds the `gecko-vulnerability` label.
+</Step>
+<Step title="Map statuses">
+  Map Gecko's statuses (Open, In progress, Fixed, False positive, Accepted risk)
+  to your Jira workflow statuses. Gecko proposes a mapping on connect; adjust as
+  needed.
+</Step>
+</Steps>
+
+## Auto-create issues
+
+Turn on **auto-create** to file a Jira issue for every finding after each scan.
+A project must be selected first.
+
+<Note>
+  Gecko warns you if the connection is incomplete: issue type and status mapping
+  must be set before tickets can be created reliably.
+</Note>
+
+<Tip>
+  Connect Jira *after* your team agrees on how it triages findings, so issues
+  land in the right place instead of creating noise.
+</Tip>

@@ -1,58 +1,73 @@
 ---
-title: "Findings & Remediation"
-description: "Review Gecko findings, prioritize the right issues, and build a clean remediation workflow."
+title: "Findings & remediation"
+description: "Triage Gecko findings, request a fix, and verify the result with a rescan."
 ---
 
-## Start with triage, not panic
+Because Gecko only surfaces high-confidence, proven findings, triage is mostly
+about deciding *how* to fix, not *whether* something is real. Each finding
+arrives with a [call chain](/concepts/findings), a CVSS score, a proof of
+concept, and a patch.
 
-The first job is to understand the issue, not to patch blindly.
+## The finding drawer
 
-For each finding, your team should answer four questions:
+Open any finding to see everything you need to act:
 
-1. Is the code path real in this environment?
-2. What is the likely blast radius?
-3. Is there a safe fix available now?
-4. How will we verify the result?
+| Tab | Contents |
+| --- | --- |
+| **Overview** | Severity, confidence, CWE, file path, description, and CVSS rationale. |
+| **Fix** | The AI-generated patch and a button to open a fix PR. |
+| **Exploit** | The proof of concept demonstrating the issue. |
+| **CVSS** | The full CVSS 4.0 breakdown. |
+| **Activity** | Status-change history with timestamps. |
 
-## Recommended remediation workflow
+## Remediation workflow
 
 <Steps>
-<Step title="Open the finding details">
-  Review the explanation, code context, and remediation guidance before you
-  assign the work.
+<Step title="Open the finding and read the chain">
+  The source-to-sink chain and the primary vulnerable step tell you exactly why
+  the path is exploitable. Validate it against your environment.
 </Step>
-<Step title="Validate impact with a code owner">
-  Security context matters, but product and runtime context matter too.
+<Step title="Decide the disposition">
+  Set the status: keep it **Open**, move to **In progress**, or mark
+  **Accepted risk** (optionally with an expiry) or **False positive** if it
+  doesn't apply.
 </Step>
-<Step title="Fix the root cause where possible">
-  Prefer changes that remove the unsafe pattern instead of only hiding the most
-  visible symptom.
+<Step title="Fix the root cause">
+  Apply the suggested patch or write your own. Prefer removing the unsafe pattern
+  over hiding the symptom. Use [auto-fix PRs](/remediation/auto-fix-prs) to ship
+  the patch in one click.
 </Step>
-<Step title="Push the work into your team workflow">
-  Use Jira, Linear, Slack, or the team’s preferred operating model once the
-  issue is validated.
+<Step title="Track the work where your team lives">
+  Create a [Jira, Linear, ClickUp, or Shortcut](/integrations) ticket, or get a
+  [Slack](/slack-integration) nudge, so remediation lands in your normal flow.
 </Step>
-<Step title="Rescan to confirm the outcome">
-  The rescan is the proof that the vulnerability is actually gone.
+<Step title="Verify with a rescan">
+  When the fix merges, Gecko rechecks the finding and marks it **Fix verified**
+  once the vulnerability is gone. That's the proof it's actually resolved.
 </Step>
 </Steps>
 
-## What a good remediation process looks like
+## Prioritize by impact
 
 <CardGroup cols={2}>
-  <Card title="High-signal prioritization">
-    Start with issues that touch auth, secrets, remote execution, external
-    network access, or broad data exposure.
+  <Card title="Start with the worst paths" icon="fire">
+    Auth bypass, secrets, remote execution, SSRF, and broad data exposure first.
+    Severity and confidence are right there to sort by.
   </Card>
-  <Card title="Clean ownership">
-    Every validated finding should have a clear next step, even if that next
-    step is to track it instead of fixing immediately.
+  <Card title="Filter to what's actionable" icon="filter">
+    Filter the vulnerability table by status, severity, type, repository, branch,
+    age, or date to build a focused worklist.
   </Card>
-  <Card title="Verification">
-    Use rescans, tests, and code review to confirm the repository is genuinely
-    safer after the change.
+  <Card title="Use bulk actions" icon="layer-group">
+    Select multiple findings to change status or dismiss in bulk.
   </Card>
-  <Card title="Repeatability">
-    The best teams make remediation routine, not exceptional.
+  <Card title="Make it routine" icon="repeat">
+    The best teams treat remediation as a repeatable loop, not an exception.
   </Card>
 </CardGroup>
+
+## Status, severity, and false positives
+
+See [Findings](/concepts/findings) for the full status lifecycle, the
+confidence and false-positive scoring model, and how de-duplication keeps a
+finding tracked over time instead of reappearing on every scan.

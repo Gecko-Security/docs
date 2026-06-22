@@ -1,0 +1,124 @@
+---
+title: "Connect GitLab"
+description: "Connect GitLab.com, self-managed GitLab, or GitLab Dedicated with an access token."
+---
+
+Gecko connects to GitLab with a **GitLab access token** and your instance URL.
+Gecko validates the token, stores the instance URL for your team, and uses the
+token to list repositories, read project metadata, clone code for scans, post
+merge-request comments, and open fix merge requests.
+
+<Warning>
+  **Self-managed GitLab is usually network-restricted.** If your GitLab group,
+  instance, or network limits access by IP, allowlist Gecko's IP addresses
+  **before** you connect, otherwise token validation, repo sync, and clones
+  will fail even with a valid token. See [Network & IP allowlist](/connect/network-allowlist).
+</Warning>
+
+## Connect
+
+<Steps>
+<Step title="Create a GitLab access token">
+  In GitLab, create a personal, group, or service-account token on an account
+  that can access the repositories you want Gecko to scan:
+
+  - **Name**: `Gecko Security`
+  - **Expiration**: 1 year, or your team's standard rotation window
+  - **Role**: Developer or higher on the target projects
+  - **Scope**: `api`
+
+  GitLab requires an expiration date unless an administrator has changed that
+  policy. See
+  [GitLab personal access tokens](https://docs.gitlab.com/user/profile/personal_access_tokens/).
+
+  <Note>
+    The `api` scope is required to post comments on merge requests. With a
+    narrower scope, scans still run but MR comments fail with `403`.
+  </Note>
+</Step>
+
+<Step title="Add the token in Gecko">
+  Go to **Settings** &gt; **GitLab** and enter your instance URL and token. Use
+  the base URL only. Do **not** include `/api/v4`.
+
+  <Tabs>
+    <Tab title="GitLab.com">
+      Use `https://gitlab.com` as the instance URL. No IP allowlisting needed.
+    </Tab>
+    <Tab title="Self-managed">
+      Use your instance's base URL, for example `https://gitlab.example.com`. If
+      access is IP-restricted, allowlist
+      [Gecko's IP addresses](/connect/network-allowlist) first.
+    </Tab>
+    <Tab title="GitLab Dedicated">
+      Use your tenant URL, then add
+      [Gecko's IP addresses](/connect/network-allowlist) to the Switchboard IP
+      allowlist.
+    </Tab>
+  </Tabs>
+
+  Gecko validates the token with `GET {instance}/api/v4/user`. For security,
+  Gecko rejects instance URLs that aren't HTTPS or that point at private or
+  loopback addresses.
+</Step>
+
+<Step title="Select repositories">
+  Gecko syncs the projects your token can access
+  (`GET /api/v4/projects?membership=true`). Select the repositories you want
+  Gecko to track.
+</Step>
+
+<Step title="Configure the webhook">
+  Gecko shows a webhook URL and a secret token. In GitLab, go to **Settings** &gt;
+  **Webhooks**, paste the URL, put the secret in **Secret token**, and enable:
+
+  - **Merge request events**
+  - **Push events**
+  - **Vulnerability events**
+
+  Gecko verifies the `X-Gitlab-Token` header on every webhook. See
+  [Webhooks](/connect/webhooks).
+</Step>
+</Steps>
+
+## Where Gecko runs
+
+| Deployment | Instance URL | Notes |
+| --- | --- | --- |
+| GitLab.com | `https://gitlab.com` | Cloud; no IP allowlist needed. |
+| Self-managed | Your base URL | Allowlist Gecko's IP addresses if access is IP-restricted. |
+| GitLab Dedicated | Your tenant URL | Add Gecko's IP addresses to the Switchboard IP allowlist. |
+
+## What Gecko uses the token for
+
+- Validate the connection: `GET /api/v4/user`
+- List projects: `GET /api/v4/projects?membership=true`
+- Read branches, languages, commits, and merge-request details
+- Clone repositories over HTTPS for scan workers
+- Post merge-request comments and open fix merge requests
+
+<Tip>
+  Use a dedicated service account scoped only to the groups and projects Gecko
+  should scan, and rotate the token on a schedule.
+</Tip>
+
+## Export findings back to GitLab
+
+Gecko can push findings into GitLab's native Security Dashboard. See
+[GitLab vulnerability export](/gitlab-vulnerability-export).
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Token validation fails">
+    Confirm the token is active, has the `api` scope, and that Gecko's IP addresses
+    can reach your instance. See [Network & IP allowlist](/connect/network-allowlist).
+  </Accordion>
+  <Accordion title="Empty repository list or clone failures">
+    Usually an IP restriction. A valid token still can't help if the network
+    blocks Gecko. Allowlist the IP addresses and retry the sync.
+  </Accordion>
+  <Accordion title="MR comments fail with 403">
+    The token is missing the `api` scope. Recreate it with `api` and reconnect.
+  </Accordion>
+</AccordionGroup>

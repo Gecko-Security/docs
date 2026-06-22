@@ -1,0 +1,34 @@
+---
+title: "Public URLs & ZIP uploads"
+description: "Scan code without connecting a provider. Ideal for evaluation and open source."
+---
+
+You don't need a provider connection to try Gecko. Two inputs let you scan code
+directly, which is the fastest way to evaluate Gecko or review an open-source
+project.
+
+<CardGroup cols={2}>
+  <Card title="Public repository URL" icon="link">
+    Paste a public GitHub or GitLab repository URL and scan it immediately. Best
+    for evaluating Gecko on open-source code.
+  </Card>
+  <Card title="ZIP upload" icon="file-zipper">
+    Upload a ZIP of your code for a point-in-time scan. Best when the code isn't
+    reachable through a supported provider.
+  </Card>
+</CardGroup>
+
+## When to use which input
+
+| Input | Best for | Repeatable scans | PR checks |
+| --- | --- | --- | --- |
+| [GitHub](/connect/github) / [GitLab](/connect/gitlab) | Ongoing team workflows | Yes | Yes |
+| Public URL | Evaluating on open source | One-off | No |
+| ZIP upload | Code not in a provider | One-off | No |
+
+<Tip>
+  Public URLs and ZIP uploads produce the same high-signal findings, wiki, and
+  endpoint map as a connected repository; they just don't support repeatable,
+  webhook-driven workflows. Connect a [provider](/connect/github) when you're
+  ready to operationalize scanning.
+</Tip>

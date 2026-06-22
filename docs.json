@@ -24,35 +24,86 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get started",
             "pages": [
               "index",
-              "quick-start"
+              "quick-start",
+              "how-gecko-works"
+            ]
+          },
+          {
+            "group": "Core concepts",
+            "pages": [
+              "concepts/findings",
+              "concepts/scans",
+              "concepts/repository-wiki",
+              "concepts/api-spec"
+            ]
+          },
+          {
+            "group": "Connect your code",
+            "pages": [
+              "connect/github",
+              "connect/gitlab",
+              "connect/network-allowlist",
+              "connect/webhooks",
+              "connect/other-inputs"
             ]
           },
           {
             "group": "Scanning",
             "pages": [
-              "repository-scanning",
-              "findings-remediation",
+              "scanning/run-a-scan",
+              "scanning/pr-checks",
+              "scanning/scheduled-scans",
+              "scanning/rules",
               "scanner-settings"
             ]
           },
           {
-            "group": "Platform",
+            "group": "Triage & remediation",
             "pages": [
-              "teams-permissions",
-              "integrations",
-              "github-gitlab-integration",
-              "jira-integration",
-              "linear-integration",
-              "slack-integration"
+              "findings-remediation",
+              "remediation/auto-fix-prs"
             ]
           },
           {
-            "group": "Authentication",
+            "group": "Integrations",
             "pages": [
-              "access/okta-saml-onboarding"
+              "integrations",
+              "jira-integration",
+              "linear-integration",
+              "slack-integration",
+              "clickup-integration",
+              "shortcut-integration",
+              "gitlab-vulnerability-export"
+            ]
+          },
+          {
+            "group": "Administration",
+            "pages": [
+              "teams-permissions",
+              "access/okta-saml-onboarding",
+              "admin/api-keys",
+              "admin/audit-log",
+              "admin/billing"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "deployment/architecture"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Changelog",
+        "groups": [
+          {
+            "group": "Changelog",
+            "pages": [
+              "changelog"
             ]
           }
         ]

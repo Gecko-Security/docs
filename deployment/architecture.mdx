@@ -1,0 +1,51 @@
+---
+title: "Deployment models"
+description: "How Gecko runs: cloud SaaS and hybrid, and what that means for network access."
+---
+
+Gecko runs as a managed service, with a hybrid option for teams that need code
+to stay inside their own cloud. Both models share the same dashboard and
+findings experience.
+
+## Deployment options
+
+<Tabs>
+  <Tab title="Cloud (default)">
+    The standard deployment. The Gecko app runs on Vercel and the scanner runs
+    in Gecko's AWS environment. You connect a [provider](/connect/github), scans
+    run on Gecko's infrastructure, and results appear in your dashboard.
+
+    For IP-restricted source control, Gecko reaches your instance from a fixed
+    set of IP addresses. See [Network & IP allowlist](/connect/network-allowlist).
+
+    ```mermaid
+    flowchart LR
+      U["Your team"] --> APP["Gecko app · Vercel"]
+      APP --> SC["Gecko scanner · AWS"]
+      APP -->|"API · webhooks"| G["Your source control"]
+      SC -->|"git clone"| G
+    ```
+  </Tab>
+
+  <Tab title="Hybrid">
+    For teams that require code never to leave their cloud, Gecko supports a
+    hybrid model: the **scanner runs inside your own AWS environment**, while the
+    dashboard remains managed by Gecko. Code is retrieved within your account
+    (for example, from S3), analyzed locally, and only findings are sent back to
+    the dashboard.
+
+    <Note>
+      Hybrid deployment is an Enterprise capability and is set up with the Gecko
+      team. A **Deployment** settings page appears when it's enabled for your
+      team.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Why GitLab needs an allowlist but GitHub.com doesn't
+
+GitHub.com and GitLab.com are public and reachable from anywhere, so Gecko
+connects without any network changes. Self-managed GitLab, GitLab Dedicated, and
+GitHub Enterprise Server often sit behind IP restrictions, so Gecko must reach
+them from known IP addresses, which is exactly what the
+[network allowlist](/connect/network-allowlist) provides.

@@ -1,0 +1,53 @@
+---
+title: "Auto-fix PRs"
+description: "Ship Gecko's suggested patch as a pull request or a commit to an existing PR."
+---
+
+Every persisted finding includes a unified-diff **patch**. Gecko can apply that
+patch for you, either as a new pull request or as a commit to the PR that
+introduced the issue.
+
+## Two fix paths
+
+<CardGroup cols={2}>
+  <Card title="Fix PR on the default branch" icon="code-pull-request">
+    For findings from a full scan, Gecko opens a branch (default prefix
+    `gecko-fix/`) with the patch applied and raises a pull or merge request for
+    review.
+  </Card>
+  <Card title="Commit to an existing PR" icon="code-commit">
+    For findings from a [PR scan](/scanning/pr-checks), Gecko can commit the fix
+    directly to the PR's head branch so the fix rides along with the change.
+  </Card>
+</CardGroup>
+
+## Request a fix
+
+<Steps>
+<Step title="Open the finding's Fix tab">
+  Review the proposed patch in the [finding drawer](/findings-remediation).
+</Step>
+<Step title="Request the fix">
+  Click **Request fix**. Gecko creates the branch and PR (or commits to the
+  existing PR), with the change attributed to Gecko.
+</Step>
+<Step title="Review and merge">
+  Treat it like any other PR: review the diff, run CI, and merge when you're
+  satisfied.
+</Step>
+<Step title="Let Gecko verify">
+  After merge, Gecko rechecks the finding and marks it **Fix verified** once the
+  vulnerability is gone.
+</Step>
+</Steps>
+
+## Patch status
+
+As a fix moves through your pipeline, the finding's patch reflects where it is:
+**generated** → **applied** → **merged** → **verified**.
+
+<Note>
+  Configure the fix branch prefix and whether fixes are offered or committed
+  automatically in **Settings** &gt; **Pull Requests**. See
+  [PR checks](/scanning/pr-checks).
+</Note>

@@ -1,13 +1,22 @@
 ---
 title: "Scanner settings"
-description: "Configure scan behavior, schedules, and rules."
+description: "Where to configure scan behavior, schedules, rules, and integrations."
 ---
 
-Use **Settings** to control how Gecko scans your repositories.
+Gecko's scan behavior is configured across a few places in **Settings** and on
+each repository. Use this page as a map.
 
-| Setting | Where | When to configure |
+| What | Where | When to configure |
 | --- | --- | --- |
-| Repository selection | Scan flow | When adding new repos to scan |
-| Scan cadence | Schedules | After your baseline workflow is stable |
-| Rules | Rules | When you want to tune which findings surface |
-| Integrations | Integrations | When findings are ready to move outside Gecko |
+| Repository selection | [Code Settings](/connect/github) | When adding repos to scan |
+| Default branch & per-repo options | Repository &gt; **Settings** | Per repository |
+| Pull request checks | **Settings** &gt; **Pull Requests** | When you want [PR scanning](/scanning/pr-checks) |
+| Fix detection / auto-fix | **Settings** &gt; **Pull Requests** | When enabling [auto-fix PRs](/remediation/auto-fix-prs) |
+| Scan cadence | [Schedules](/scanning/scheduled-scans) | After your baseline workflow is stable |
+| Rules | [Rules](/scanning/rules) | When tuning which findings surface |
+| Integrations | [Integrations](/integrations) | When routing findings outside Gecko |
+
+<Tip>
+  Start with defaults. Run a baseline scan, trust the results, then tune, rather
+  than configuring everything up front.
+</Tip>

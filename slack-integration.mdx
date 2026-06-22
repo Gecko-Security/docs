@@ -1,10 +1,34 @@
 ---
-title: "Slack integration"
-description: "Connect Slack for scan notifications and timely vulnerability follow-up."
+title: "Slack"
+description: "Get scan notifications and remediation nudges in the right channels."
 ---
 
-Use **Settings** &gt; **Slack** or **Settings** &gt; **Integrations** to connect
-Slack.
+Connect Slack so the right team sees security work without living inside Gecko.
+Configure it in **Settings** &gt; **Slack**.
 
-Slack works best for timely scan notifications, follow-up nudges, and making
-sure the right team sees security work without living inside Gecko all day.
+<Note>
+  The Slack integration requires the Pro plan.
+</Note>
+
+## Connect
+
+<Steps>
+<Step title="Install the Gecko Slack app">
+  Click **Connect** and approve the Slack app install for your workspace.
+</Step>
+<Step title="Route channels to repositories">
+  Map one or more Slack channels to **All repositories** or to specific repos.
+  Add as many routes as you need. For private channels, invite the bot with
+  `/invite @Gecko Security`.
+</Step>
+<Step title="Filter the noise">
+  Set a **minimum severity** (Critical, High, Medium, or Low) and choose whether
+  to notify on [PR scans](/scanning/pr-checks) and
+  [scheduled scans](/scanning/scheduled-scans).
+</Step>
+</Steps>
+
+<Tip>
+  Route Critical and High findings to a focused security channel, and send
+  lower-severity or scheduled-scan updates to a quieter channel.
+</Tip>

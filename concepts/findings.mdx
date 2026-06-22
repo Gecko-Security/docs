@@ -1,0 +1,93 @@
+---
+title: "Findings"
+description: "How Gecko scores, proves, and de-duplicates vulnerabilities."
+---
+
+A **finding** (used interchangeably with **vulnerability**) is a confirmed,
+exploitable security issue in a specific file, backed by a proven path from user
+input to a dangerous operation.
+
+## Vulnerability types
+
+Gecko detects seven high-impact, server-side classes:
+
+| Type | Name |
+| --- | --- |
+| `RCE` | Remote Code Execution |
+| `SQLI` | SQL Injection |
+| `XSS` | Cross-Site Scripting |
+| `SSRF` | Server-Side Request Forgery |
+| `LFI` | Local File Inclusion |
+| `AFO` | Arbitrary File Operations |
+| `IDOR` | Insecure Direct Object Reference |
+
+## The function call chain
+
+Every finding includes an ordered **call chain** from a **source** (where
+attacker-controlled input enters) through intermediate functions to a **sink**
+(the dangerous operation), with file paths and line numbers at each step. One
+step is marked the **primary vulnerable step**, the single decision that makes
+the path exploitable.
+
+This chain is the proof. It's what lets you validate a finding quickly instead
+of re-deriving the data flow yourself.
+
+```text Example chain
+RCE · CVSS 9.8 (Critical) · confidence 10/10
+
+ ① source   api/routes.py:31        cmd = request.json["cmd"]
+ ② flow     services/runner.py:60   run_task(cmd)
+ ③ sink     utils/shell.py:12       subprocess.run(cmd, shell=True)   ← primary vulnerable step
+```
+
+## Scoring
+
+<CardGroup cols={2}>
+  <Card title="Confidence (1 to 10)" icon="gauge-high">
+    How sure the agent is that the path is real and reachable. Only findings at
+    **9 or above** are persisted.
+  </Card>
+  <Card title="False-positive score (1 to 10)" icon="ban">
+    The agent's own skepticism check. High scores are filtered out before a
+    finding is saved.
+  </Card>
+  <Card title="Severity (CVSS 4.0)" icon="triangle-exclamation">
+    A 0 to 10 score computed from the CVSS 4.0 vector, labeled Critical (≥9), High
+    (≥7), Medium (≥4), or Low.
+  </Card>
+  <Card title="CWE" icon="hashtag">
+    The Common Weakness Enumeration identifier for the underlying weakness.
+  </Card>
+</CardGroup>
+
+<Tip>
+  You can override severity on an individual finding when your environment's
+  context differs from the default CVSS assessment.
+</Tip>
+
+## Status lifecycle
+
+Each finding moves through a status you control during triage:
+
+| Status | Meaning |
+| --- | --- |
+| `Open` | Detected and not yet addressed. |
+| `In progress` | A fix is underway (for example, a fix PR is open). |
+| `Fixed` | The fix has been merged. |
+| `Fix verified` | A post-merge rescan confirmed the vulnerability is gone. |
+| `False positive` | Dismissed. Re-detection does **not** auto-reopen it. |
+| `Accepted risk` | Risk explicitly accepted, optionally with an expiry date. |
+
+## De-duplication
+
+Each finding has a **fingerprint** derived from its type and sink. When a later
+scan detects the same issue, Gecko updates the existing finding (refreshing
+"last seen") instead of creating a duplicate. A longer, better-proven chain
+supersedes the old one while keeping the same finding.
+
+## What you can do with a finding
+
+From the finding drawer you can change status, adjust severity, request a
+[fix PR](/remediation/auto-fix-prs), create a ticket in
+[Jira, Linear, ClickUp, or Shortcut](/integrations), export to JSON or Markdown,
+and copy a permalink.

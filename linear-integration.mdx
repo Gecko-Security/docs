@@ -1,10 +1,33 @@
 ---
-title: "Linear integration"
-description: "Connect Linear so Gecko findings move cleanly into the engineering backlog."
+title: "Linear"
+description: "Push Gecko findings into your Linear backlog with the right priority."
 ---
 
-Use **Settings** &gt; **Linear** when your engineering organization works in
-Linear.
+Connect Linear so findings move into normal backlog ownership. Configure it in
+**Settings** &gt; **Linear**.
 
-Connect it when you want Gecko findings to move into normal backlog ownership
-instead of staying isolated inside the security tool.
+## Connect
+
+<Steps>
+<Step title="Authorize Linear">
+  Click **Connect** and complete the Linear OAuth flow.
+</Step>
+<Step title="Choose a team and project">
+  Select the Linear **team** that should receive issues, and optionally a
+  **project**.
+</Step>
+<Step title="Set defaults">
+  Pick a **default assignee** and any **labels**. Optionally enable
+  **priority mapping** so a finding's severity maps to a Linear priority.
+</Step>
+</Steps>
+
+## Auto-create issues
+
+Enable **auto-create** to file a Linear issue for every finding after each scan.
+A team must be selected first.
+
+<Tip>
+  Use priority mapping so Critical and High findings land at the top of the
+  backlog automatically.
+</Tip>

@@ -1,0 +1,55 @@
+---
+title: "Run a scan"
+description: "Start a baseline scan and read the results."
+---
+
+Once a repository is connected, you can scan it on demand.
+
+<Steps>
+<Step title="Open the repository">
+  Go to **Repositories** and select the repo you want to scan.
+</Step>
+
+<Step title="Start a deep scan on the default branch">
+  Run a [deep scan](/concepts/scans) on the branch your team trusts as the
+  baseline (usually `main`). Keep the first run simple: one repository, one
+  branch. You can include several repositories later for a **multi-repo** scan.
+</Step>
+
+<Step title="Wait for the pipeline to finish">
+  Gecko generates the [wiki](/concepts/repository-wiki), indexes the code,
+  discovers [endpoints](/concepts/api-spec), and analyzes security-sensitive
+  files. Progress is shown on the scan.
+</Step>
+
+<Step title="Review results">
+  Open the **Vulnerabilities** tab to triage findings, the **Endpoints** tab for
+  the attack surface, and the **Wiki** tab for the codebase overview. See
+  [Findings & remediation](/findings-remediation).
+</Step>
+</Steps>
+
+## Recommended rollout
+
+<Steps>
+<Step title="Connect one provider first">
+  Start with the code host your team uses for private repositories.
+</Step>
+<Step title="Pick a repository with clear ownership">
+  The first scan is easier to act on when the team knows who validates and fixes
+  issues.
+</Step>
+<Step title="Run a baseline on the default branch">
+  Don't overcomplicate the first run with extra variables.
+</Step>
+<Step title="Expand after the first clean loop">
+  Add more repositories, turn on [PR checks](/scanning/pr-checks), and
+  [schedule scans](/scanning/scheduled-scans).
+</Step>
+</Steps>
+
+## Repository views
+
+Each repository has tabs for **Overview**, **Vulnerabilities**, **Scans**,
+**Endpoints**, **Wiki**, and **Settings**, so you can move between the latest
+results and historical scans in one place.

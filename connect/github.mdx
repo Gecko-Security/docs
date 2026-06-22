@@ -1,0 +1,95 @@
+---
+title: "Connect GitHub"
+description: "Install the Gecko GitHub App for GitHub.com, or connect GitHub Enterprise Server with a token."
+---
+
+Connecting source control is the highest-value step: repositories appear
+directly in the scan flow, scans become repeatable, and remediation stays tied
+to real code ownership.
+
+GitHub.com is a cloud service reachable from anywhere, so **no IP allowlisting is
+required**. (Self-managed GitLab and restricted networks are different, see
+[Network & IP allowlist](/connect/network-allowlist).)
+
+## Connect
+
+<Tabs>
+  <Tab title="GitHub.com">
+    Gecko connects to GitHub.com through a **GitHub App** installation. The App
+    grants Gecko scoped, auto-rotating access, with no personal access token to
+    manage.
+
+    <Steps>
+    <Step title="Start the install from Gecko">
+      Go to **Settings** &gt; **Code Settings** and click **Connect** on GitHub.
+      Gecko redirects you to GitHub to install the Gecko App.
+    </Step>
+    <Step title="Choose repositories on GitHub">
+      Install the App on your organization and select **All repositories** or a
+      specific subset. You can change this selection in GitHub later.
+    </Step>
+    <Step title="Return to Gecko">
+      GitHub redirects back and Gecko records the installation for your team.
+      Selected repositories sync into the dashboard.
+    </Step>
+    <Step title="Scan">
+      Open a repository and run a [baseline scan](/scanning/run-a-scan). For pull
+      request scanning, see [PR checks](/scanning/pr-checks).
+    </Step>
+    </Steps>
+
+    <Note>
+      At scan time, Gecko mints a short-lived GitHub App installation token and
+      uses it to clone over HTTPS. Tokens are minted fresh per scan and expire
+      automatically, so there is no long-lived credential to rotate. Gecko listens
+      for `pull_request`, `issue_comment`, and `push`
+      [webhook events](/connect/webhooks), verified with an
+      `X-Hub-Signature-256` HMAC signature.
+    </Note>
+  </Tab>
+
+  <Tab title="GitHub Enterprise Server">
+    GitHub Enterprise Server (GHES) is often self-hosted, so it connects with a
+    **personal access token** and your instance base URL instead of the public
+    App.
+
+    <Steps>
+    <Step title="Create a token in GHES">
+      Create a personal access token on an account that can reach the
+      repositories you want to scan, with these scopes:
+
+      - `repo`
+      - `read:org`
+      - `admin:repo_hook`
+    </Step>
+    <Step title="Connect in Gecko">
+      Go to **Settings** &gt; **GitHub Enterprise**. Enter your GHES base URL and
+      the token. Gecko validates it against `GET {your-instance}/api/v3/user`.
+    </Step>
+    <Step title="Add the webhook">
+      Gecko generates a per-connection webhook secret. Add the webhook URL in
+      GHES with content type `application/json` and enable **Pull requests** and
+      **Pushes**. See [Webhooks](/connect/webhooks).
+    </Step>
+    </Steps>
+
+    <Warning>
+      If your GHES instance restricts inbound or outbound traffic by IP,
+      allowlist Gecko's IP addresses the same way you would for self-managed
+      GitLab. See [Network & IP allowlist](/connect/network-allowlist).
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Repositories aren't showing up">
+    Confirm the GitHub App is installed on the right organization and that the
+    repository is included in the App's repository selection.
+  </Accordion>
+  <Accordion title="GHES token validation fails">
+    Verify the base URL is reachable, the token is active, and it has the
+    `repo`, `read:org`, and `admin:repo_hook` scopes.
+  </Accordion>
+</AccordionGroup>
