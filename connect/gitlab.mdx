@@ -20,9 +20,32 @@ merge-request comments, and open fix merge requests.
 ## Connect
 
 <Steps>
-<Step title="Create a GitLab access token">
-  In GitLab, create a personal, group, or service-account token on an account
-  that can access the repositories you want Gecko to scan:
+<Step title="Create a dedicated service account">
+  Create a **service account** in GitLab for Gecko instead of using a personal
+  account. Gecko writes back to GitLab — it posts merge-request comments and
+  opens fix merge requests — and **those actions are authored by whoever owns
+  the token you provide.** A service account makes that activity show up as
+  "Gecko" in your commit history, notifications, and audit log instead of under
+  an individual's name, and it keeps the connection working when that person
+  leaves or rotates their own credentials.
+
+  On GitLab Premium and Ultimate, use the built-in
+  [Service accounts](https://docs.gitlab.com/user/profile/service_accounts/)
+  feature. On Free, create a standard account to act as the bot (for example,
+  `gecko-bot`). Either way, add it to the groups or projects you want Gecko to
+  scan with the **Developer** role or higher.
+
+  <Note>
+    This mirrors how Gecko connects to GitHub, where the GitHub App acts under
+    its own `gecko[bot]` identity automatically. GitLab has no equivalent app
+    identity, so a service account is how you get the same clean separation
+    between Gecko's actions and your team's.
+  </Note>
+</Step>
+
+<Step title="Create an access token">
+  On the service account, create an access token that can reach the repositories
+  you want Gecko to scan:
 
   - **Name**: `Gecko Security`
   - **Expiration**: 1 year, or your team's standard rotation window
@@ -145,9 +168,13 @@ with a valid token. GitLab.com needs none of this.
 - Clone repositories over HTTPS for scan workers
 - Post merge-request comments and open fix merge requests
 
+Comments and fix MRs are authored by the GitLab account that owns the token, so
+connecting with a [service account](#connect) keeps Gecko's activity clearly
+attributed to "Gecko" rather than to an individual.
+
 <Tip>
-  Use a dedicated service account scoped only to the groups and projects Gecko
-  should scan, and rotate the token on a schedule.
+  Scope the service account to only the groups and projects Gecko should scan,
+  and rotate its token on a schedule.
 </Tip>
 
 ## Export findings back to GitLab
