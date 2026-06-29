@@ -1,68 +1,129 @@
 ---
-title: "Self-managed SSO"
-description: "Configure SSO end to end yourself, from inside Gecko, without involving the Gecko team."
-sidebarTitle: "Self-managed SSO"
+title: "Single Sign-On (SSO)"
+description: "Set up SAML or OIDC single sign-on yourself, end to end, from inside Gecko."
+sidebarTitle: "Single Sign-On"
 icon: "user-gear"
 ---
 
-Self-managed SSO lets a team admin set up single sign-on entirely from inside
-Gecko, with no back-and-forth with the Gecko team. It works with any SAML 2.0 or OIDC
-identity provider; you choose the protocol when you start, and configure the rest
-in the setup portal.
+A Gecko team admin sets up single sign-on entirely from the **self-service portal**
+in Gecko, with no back-and-forth with the Gecko team. It works with any SAML 2.0 or
+OIDC identity provider; you pick the protocol when you start and configure the rest
+in the portal.
 
 <Info>
   **You'll need:** Gecko **Enterprise** plan, a Gecko team admin, an admin on your
   identity provider, and a test user who isn't the admin changing sign-in policy.
 </Info>
 
+## How it works
+
+When you start setup, Gecko provisions a **dedicated connection** for your team and
+the portal shows the exact values your IdP needs. The single most important rule:
+
+<Warning>
+  **Copy the service-provider values verbatim from the portal.** For SAML, the
+  **Entity ID** and metadata URL contain an **auto-generated connection ID** (for
+  example `gecko-okta-72468ca55845447aa90c`); they are **not** built from your team
+  slug. Don't hand-construct or guess them; paste exactly what the portal shows, or
+  import its metadata URL. Mismatched values are the number-one cause of failed
+  logins.
+</Warning>
+
+Your **team slug** is your sign-in path (`auth.gecko.security/...`), not your SAML
+Entity ID. Two different things; keep them straight.
+
 ## Set it up
 
 <Steps>
 <Step title="Save your team slug">
-  In **Settings > Single Sign-On & SCIM**, save a unique team slug. It becomes
-  your connection identifier and sign-in path, so your service-provider values are
-  based on it.
+  In **Settings > Single Sign-On & SCIM**, save a unique team slug. It becomes your
+  sign-in path.
 
   <Warning>
     The slug is **read-only once SSO is connected**. Pick the final one now.
   </Warning>
 </Step>
 
-<Step title="Start the connection">
-  Click **Connect** and choose **SAML** or **OIDC**. Gecko opens the setup portal,
-  which shows the values your IdP needs:
-  - **SAML:** ACS URL and Entity ID
-  - **OIDC:** the redirect (callback) URI
+<Step title="Start the connection and copy the SP values">
+  Click **Connect** and choose **SAML** or **OIDC**. Gecko opens the portal and
+  shows the values your IdP needs:
+  - **SAML:** **ACS URL**, **Entity ID**, and a **metadata URL**. Copy these exactly
+    (or hand the metadata URL to your IdP). The Entity ID ends in the auto-generated
+    connection ID, not your slug.
+  - **OIDC:** the **redirect (callback) URI**.
 </Step>
 
 <Step title="Create the app in your IdP">
-  Create a SAML or OIDC app in your identity provider using those values.
-  - **SAML:** set the Name ID and attributes. See
-    [SAML SSO Setup](/access/saml) for the exact field values.
-  - **OIDC:** create an OAuth client and note its **client ID**, **client
-    secret**, and **issuer / discovery URL**.
-
-  Assign the app to the users who should reach Gecko.
+  Create a SAML or OIDC app in your identity provider using those exact values, then
+  assign the app to the users who should reach Gecko.
+  - **SAML:** set the Name ID and attributes. See the
+    [SAML provider reference](/access/saml) for the per-provider screens (Google
+    Workspace, Okta, Entra ID) and the exact claim names.
+  - **OIDC:** create an OAuth client and note its **client ID**, **client secret**,
+    and **issuer / discovery URL**.
 </Step>
 
 <Step title="Finish in the portal">
-  Enter your IdP details back in the setup portal:
-  - **SAML:** sign-in URL and signing certificate
-  - **OIDC:** issuer/discovery URL, client ID, and client secret
+  Enter your IdP details back in the portal:
+  - **SAML:** sign-in URL and signing certificate.
+  - **OIDC:** issuer/discovery URL, client ID, and client secret.
 </Step>
 
 <Step title="Verify and test">
   Return to Gecko and **verify**. The connection moves to **Connected** and Gecko
-  shows your team **Sign-in URL**. Open it in a fresh browser and log in with a
-  **non-admin** user.
+  shows your team **Sign-in URL**. Open that URL in a **fresh incognito window** and
+  log in with a **non-admin** test user.
 
-  Keep one admin session open and **SSO enforcement** optional until this works,
-  then switch enforcement to **Required**.
+  Keep one admin session open and **SSO enforcement** optional until this works end
+  to end, then switch enforcement to **Required**.
 </Step>
 </Steps>
 
 <Note>
-  Want Gecko to set the connection up for you instead? See
-  [SAML SSO Setup](/access/saml) for the managed exchange, where you send us your
-  IdP details and we activate it.
+  Always start sign-in from your Gecko **Sign-in URL** (SP-initiated), not from your
+  IdP's app tile. Launching from the IdP tile is IdP-initiated SSO, which needs extra
+  configuration. See the troubleshooting below.
 </Note>
+
+## Common errors
+
+<AccordionGroup>
+  <Accordion title="connection not found">
+    The `connection=` value in your URL doesn't match the connection Gecko created.
+    Use the **exact** connection ID / metadata URL from the portal. It's
+    auto-generated (such as `gecko-okta-72468ca55845447aa90c`), not your team slug.
+  </Accordion>
+  <Accordion title="Login fails on the callback (invalid_request / audience or Entity ID mismatch)">
+    The **Entity ID** or **ACS URL** in your IdP doesn't match the portal. This
+    happens when the values were derived from the slug instead of copied from the
+    portal. Re-paste the Entity ID and ACS URL exactly as the portal shows them, or
+    re-import its metadata URL.
+  </Accordion>
+  <Accordion title="invalid_request: client requires IdP-Initiated SSO connection parameter">
+    You launched login from your IdP's app tile (IdP-initiated). Either start sign-in
+    from your Gecko **Sign-in URL** instead (SP-initiated, the default), or append the
+    connection to your IdP's ACS URL:
+    `https://auth.gecko.security/login/callback?connection=<your-connection-id>`.
+  </Accordion>
+  <Accordion title="Google: app_not_configured_for_user">
+    Google's SAML app isn't turned on for that user. In the Google Admin console open
+    the app, click **User access**, and set it **On** for everyone or the right org
+    unit. If your browser is signed into several Google accounts (a `authuser=` value
+    in the URL), test in a **fresh incognito window** as the correct user.
+  </Accordion>
+  <Accordion title="Login succeeds but: user does not belong to any organization">
+    The user authenticated but hasn't been added to your Gecko team yet. New SSO users
+    are provisioned on first sign-in once the connection is fully **verified**. Make
+    sure the portal shows **Connected**, then retry. If it persists, contact the Gecko
+    team.
+  </Accordion>
+  <Accordion title="Login works but roles aren't assigned">
+    Confirm your IdP sends a `groups` attribute and that your Gecko role mappings
+    reference those group names. Group membership is read at login, so users must sign
+    in again after group changes.
+  </Accordion>
+  <Accordion title="Locked out after enforcing SSO">
+    Keep enforcement optional and an admin session open until the first login
+    succeeds. Contact the Gecko team to revert enforcement.
+  </Accordion>
+</AccordionGroup>

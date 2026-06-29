@@ -1,64 +1,40 @@
 ---
-title: "SAML SSO Setup"
-description: "Configure Single Sign-On with any SAML 2.0 identity provider."
-sidebarTitle: "SAML SSO Setup"
+title: "SAML provider reference"
+description: "Per-provider screens and field values for connecting a SAML 2.0 IdP to Gecko."
+sidebarTitle: "SAML providers"
 icon: "id-card"
 ---
 
-Gecko supports SAML 2.0 single sign-on with any compliant identity provider:
-Okta, Microsoft Entra ID, Google Workspace, Ping, OneLogin, and others. Your IdP
-admin creates a SAML app, exchanges a few values with Gecko, and assigns it to
-users. After setup, your team opens the Gecko sign-in URL, authenticates at your
-IdP, and lands back in Gecko.
+This is the SAML reference for [Single Sign-On](/access/self-managed-sso): where each
+value goes in your IdP and the per-provider screens for Okta, Microsoft Entra ID, and
+Google Workspace. Set up the connection in the SSO portal first, then use this page to
+enter the values in your IdP.
 
-The flow and values are identical across providers; only the IdP console screens
-differ.
+<Warning>
+  Take your **ACS URL**, **Entity ID**, and **metadata URL** from the SSO portal
+  (**Settings > Single Sign-On & SCIM**). The Entity ID contains an **auto-generated
+  connection ID** (such as `gecko-okta-72468ca55845447aa90c`). Copy it exactly, and
+  don't build it from your team slug; a mismatch is the top cause of failed logins.
+</Warning>
 
-<Note>
-  Prefer to configure it yourself, end to end, without involving the Gecko team?
-  See [Self-managed SSO](/access/self-managed-sso). The field values below are
-  the same.
-</Note>
+## Service-provider values
 
-## What you'll need
-
-<Info>
-  - Gecko **Enterprise** plan and a Gecko team admin
-  - An admin on your identity provider who can create SAML apps
-  - A test user who isn't the admin changing sign-in policy
-</Info>
-
-**Service provider (SP) values**, entered into your IdP's SAML app:
+These go into your IdP's SAML app. The portal shows the exact strings:
 
 | Field | Value |
 | --- | --- |
-| ACS URL (Reply URL) | `https://auth.gecko.security/login/callback` |
-| Entity ID (Audience) | `urn:auth0:dev-8q5eplvvn6e1pw4u:<your-slug>` |
+| ACS URL (Reply URL) | shown in the SSO portal (`https://auth.gecko.security/login/callback`) |
+| Entity ID (Audience) | shown in the SSO portal (ends in your auto-generated connection ID) |
 | Name ID format | `EmailAddress` |
 | Name ID value | the user's work email |
 
-<Note>
-  The **ACS URL is the same for every team**. Use it as-is. Only the **Entity ID**
-  is specific to you: it ends in your **team slug**, which is your connection ID.
-  For example, a Blackstone team's slug is `gecko-blackstone`, making its Entity ID
-  `urn:auth0:dev-8q5eplvvn6e1pw4u:gecko-blackstone`. Set the slug first; it becomes
-  read-only once SSO is connected. The Entity ID uses a different host than the ACS
-  URL; that's expected.
-</Note>
-
 <Tip>
-  Instead of entering these by hand, import Gecko's **SP metadata** into your IdP:
-
-  ```
-  https://auth.gecko.security/samlp/metadata?connection=<your-slug>
-  ```
-
-  It carries the ACS URL, Entity ID, and Gecko's request-signing certificate, and
-  enables signed-request verification, so you don't have to paste the values
-  individually.
+  Instead of entering these by hand, import Gecko's **SP metadata** into your IdP
+  using the metadata URL from the portal. It carries the ACS URL, Entity ID, and
+  Gecko's signing certificate in one go, so the values can't drift.
 </Tip>
 
-**Attributes**, what your IdP must send in the assertion:
+**Attributes** your IdP must send in the assertion:
 
 | Attribute | Claim name | Required |
 | --- | --- | --- |
@@ -67,119 +43,49 @@ differ.
 | Last name | `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname` | Recommended |
 | Groups | `groups` | Only for group-based role mapping |
 
-The Name ID above already carries the email, which satisfies the minimum. Send
-first and last name too so Gecko can show real names on assignees and in the
-audit log; providers that only expose atomic fields (such as Google Workspace)
-have no single display-name attribute, so map the two separately.
+The Name ID already carries the email, which satisfies the minimum. Send first and
+last name too so Gecko can show real names on assignees and in the audit log;
+providers that only expose atomic fields (such as Google Workspace) have no single
+display-name attribute, so map the two separately.
 
-## Set up the connection
-
-<Steps>
-<Step title="Save your team slug">
-  In **Settings > Single Sign-On & SCIM**, save a unique team slug. The **ACS URL**
-  is the shared value above; Gecko shows your **Entity ID** (derived from your
-  slug). Copy both into your IdP.
-</Step>
-<Step title="Create the SAML app in your IdP">
-  Create a SAML 2.0 app using those values. Set the **Name ID** and map the
-  **attributes** above, then assign your users. Where this lives depends on your
-  provider:
-
-  <AccordionGroup>
-    <Accordion title="Google Workspace">
-      Set this up in the **Google Admin console** at
-      [admin.google.com](https://admin.google.com) as a **super admin**, not from
-      Gmail or a regular user account.
-
-      1. Go to **Apps → Web and mobile apps**, then **Add app → Add custom SAML app**.
-      2. Name the app (for example, `Gecko`) and click **Continue**.
-      3. On **Google Identity Provider details**, copy the **SSO URL** and
-         **Entity ID** and download the **Certificate** (or **Download metadata**).
-         These are the IdP details you send Gecko in the next step.
-      4. On **Service provider details**, paste Gecko's **ACS URL** and
-         **Entity ID** from the table above. Set **Name ID format** to `EMAIL` and
-         **Name ID** to **Basic Information > Primary email**.
-      5. On **Attribute mapping**, map **First name** and **Last name** to the
-         given-name and surname claims in the Attributes table above. Google has
-         no single display-name field, so map the two separately; Gecko composes
-         the name from them. (Primary email is already covered by the Name ID.)
-         Click **Finish**.
-      6. Open the app, click **User access**, and turn it **On** for everyone or
-         the org units that should use Gecko.
-    </Accordion>
-    <Accordion title="Okta">
-      In the Okta admin console: **Applications → Create App Integration →
-      SAML 2.0**. Enter Gecko's **ACS URL** and **Entity ID**, set the **Name ID**
-      and attributes, then assign users. The app's **Sign On** tab exposes the
-      **identity provider metadata** URL you send Gecko in the next step.
-    </Accordion>
-    <Accordion title="Microsoft Entra ID">
-      In the Entra admin center: **Enterprise applications → New application →
-      Create your own application** (non-gallery). Under **Single sign-on → SAML**,
-      enter Gecko's **ACS URL** (Reply URL) and **Entity ID**, configure the
-      claims, then assign users. The **SAML Certificates** section there holds the
-      **Federation Metadata XML** you send Gecko in the next step.
-    </Accordion>
-  </AccordionGroup>
-</Step>
-<Step title="Send Gecko your IdP details">
-  Send us your **sign-in URL**, **Entity ID**, **X.509 certificate**, and
-  **verified domain(s)**, or your IdP's **metadata XML**, which contains all
-  three.
-</Step>
-<Step title="We activate it">
-  Gecko creates and activates the connection, then returns your team **Sign-in
-  URL**.
-</Step>
-</Steps>
-
-## Verifying your setup
-
-<Steps>
-<Step title="Test the first sign-in">
-  Open the Sign-in URL in a fresh browser and log in with a **non-admin** user.
-  Keep one admin session open and **SSO enforcement** optional until this works
-  end to end.
-</Step>
-<Step title="Require SSO">
-  Once sign-in is stable, switch **SSO enforcement** to **Required** and share the
-  Sign-in URL with your team.
-</Step>
-</Steps>
-
-<Note>
-  Group membership is read at login. If you change a user's groups in your IdP,
-  they need to sign in again for the new roles to apply in Gecko.
-</Note>
-
-## Troubleshooting
+## Provider setup
 
 <AccordionGroup>
-  <Accordion title="Login fails right after the IdP screen">
-    The **ACS URL** or **Entity ID** in your IdP doesn't match the values from
-    Gecko. Re-paste the shared ACS URL exactly, and the Entity ID exactly as
-    Gecko shows it.
+  <Accordion title="Google Workspace">
+    Set this up in the **Google Admin console** at
+    [admin.google.com](https://admin.google.com) as a **super admin**, not from
+    Gmail or a regular user account.
+
+    1. Go to **Apps → Web and mobile apps**, then **Add app → Add custom SAML app**.
+    2. Name the app (for example, `Gecko`) and click **Continue**.
+    3. On **Google Identity Provider details**, copy the **SSO URL** and download the
+       **Certificate** (or **Download metadata**). These are the IdP details you enter
+       back in the SSO portal.
+    4. On **Service provider details**, paste Gecko's **ACS URL** and **Entity ID**
+       from the SSO portal. Set **Name ID format** to `EMAIL` and **Name ID** to
+       **Basic Information > Primary email**.
+    5. On **Attribute mapping**, map **First name** and **Last name** to the
+       given-name and surname claims above. Google has no single display-name field,
+       so map the two separately; Gecko composes the name from them. (Primary email is
+       already covered by the Name ID.) Click **Finish**.
+    6. Open the app, click **User access**, and turn it **On** for everyone or the org
+       units that should use Gecko.
   </Accordion>
-  <Accordion title="The user isn't assigned to the app">
-    Assign the SAML app to that user (or their group/OU) in your IdP and wait a few
-    minutes.
+  <Accordion title="Okta">
+    In the Okta admin console: **Applications → Create App Integration → SAML 2.0**.
+    Enter Gecko's **ACS URL** and **Entity ID** from the SSO portal, set the
+    **Name ID** and attributes, then assign users. The app's **Sign On** tab exposes
+    the **identity provider metadata** URL you enter back in the portal.
   </Accordion>
-  <Accordion title="Login works but the user isn't recognized">
-    Confirm the Name ID resolves to the user's email and the **Name ID format** is
-    `EmailAddress`. Gecko expects a stable work-email identity.
-  </Accordion>
-  <Accordion title="Login works but roles aren't assigned">
-    Confirm the IdP sends a `groups` attribute and that your Gecko role mappings
-    reference those group names.
-  </Accordion>
-  <Accordion title="Locked out after enforcing SSO">
-    Keep enforcement optional and an admin session open until the first login
-    succeeds. Contact the Gecko team to revert enforcement.
-  </Accordion>
-  <Accordion title="Using IdP-initiated SSO (launching from your IdP's app tile)?">
-    The default sign-in flow is SP-initiated and uses the shared ACS URL.
-    IdP-initiated logins need the connection-specific ACS instead:
-    `https://auth.gecko.security/login/callback?connection=<your-slug>`.
-    Contact the Gecko team to enable it.
+  <Accordion title="Microsoft Entra ID">
+    In the Entra admin center: **Enterprise applications → New application → Create
+    your own application** (non-gallery). Under **Single sign-on → SAML**, enter
+    Gecko's **ACS URL** (Reply URL) and **Entity ID** from the SSO portal, configure
+    the claims, then assign users. The **SAML Certificates** section holds the
+    **Federation Metadata XML** you enter back in the portal.
   </Accordion>
 </AccordionGroup>
+
+Once the app exists and users are assigned, return to the
+[SSO portal](/access/self-managed-sso) to enter your IdP's sign-in URL and signing
+certificate, verify, and test. That page also covers the common sign-in errors.
