@@ -1,0 +1,150 @@
+---
+title: "SAML SSO Setup"
+description: "Configure Single Sign-On with any SAML 2.0 identity provider."
+sidebarTitle: "SAML SSO Setup"
+icon: "id-card"
+---
+
+Gecko supports SAML 2.0 single sign-on with any compliant identity provider —
+Okta, Microsoft Entra ID, Google Workspace, Ping, OneLogin, and others. Your IdP
+admin creates a SAML app, exchanges a few values with Gecko, and assigns it to
+users. After setup, your team opens the Gecko sign-in URL, authenticates at your
+IdP, and lands back in Gecko.
+
+The flow and values are identical across providers; only the IdP console screens
+differ.
+
+<Note>
+  Prefer to configure it yourself, end to end, without involving the Gecko team?
+  See [Self-managed SSO](/access/self-managed-sso) — the field values below are
+  the same.
+</Note>
+
+## What you'll need
+
+<Info>
+  - Gecko **Enterprise** plan and a Gecko team admin
+  - An admin on your identity provider who can create SAML apps
+  - A test user who isn't the admin changing sign-in policy
+</Info>
+
+**Service provider (SP) values** — entered into your IdP's SAML app:
+
+| Field | Value |
+| --- | --- |
+| ACS URL (Reply URL) | `https://auth.gecko.security/login/callback` |
+| Entity ID (Audience) | `urn:auth0:dev-8q5eplvvn6e1pw4u:<your-slug>` |
+| Name ID format | `EmailAddress` |
+| Name ID value | the user's work email |
+
+<Note>
+  The **ACS URL is the same for every team** — use it as-is. Only the **Entity ID**
+  is specific to you: it ends in your **team slug**, which is your connection ID.
+  For example, a Blackstone team's slug is `gecko-blackstone`, making its Entity ID
+  `urn:auth0:dev-8q5eplvvn6e1pw4u:gecko-blackstone`. Set the slug first — it becomes
+  read-only once SSO is connected. The Entity ID uses a different host than the ACS
+  URL; that's expected.
+</Note>
+
+<Tip>
+  Instead of entering these by hand, import Gecko's **SP metadata** into your IdP:
+
+  ```
+  https://auth.gecko.security/samlp/metadata?connection=<your-slug>
+  ```
+
+  It carries the ACS URL, Entity ID, and Gecko's request-signing certificate, and
+  enables signed-request verification — so you don't have to paste the values
+  individually.
+</Tip>
+
+**Attributes** — what your IdP must send in the assertion:
+
+| Attribute | Claim name | Required |
+| --- | --- | --- |
+| Email | `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress` | Yes |
+| Display name | `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name` | Recommended |
+| Groups | `groups` | Only for group-based role mapping |
+
+The Name ID above already carries the email, which satisfies the minimum.
+
+## Set up the connection
+
+<Steps>
+<Step title="Save your team slug">
+  In **Settings > Single Sign-On & SCIM**, save a unique team slug. The **ACS URL**
+  is the shared value above; Gecko shows your **Entity ID** (derived from your
+  slug). Copy both into your IdP.
+</Step>
+<Step title="Create the SAML app in your IdP">
+  Create a SAML 2.0 app using those values. Set the **Name ID** and map the
+  **attributes** above, then assign your users.
+
+  <Note>
+    Where to create the SAML app, by provider:
+    **Okta** — Applications → Create App Integration → SAML 2.0 ·
+    **Entra ID** — Enterprise applications → New application → Create your own ·
+    **Google Workspace** — Admin console → Apps → Web and mobile apps → Add custom SAML app
+  </Note>
+</Step>
+<Step title="Send Gecko your IdP details">
+  Send us your **sign-in URL**, **Entity ID**, **X.509 certificate**, and
+  **verified domain(s)** — or your IdP's **metadata XML**, which contains all
+  three.
+</Step>
+<Step title="We activate it">
+  Gecko creates and activates the connection, then returns your team **Sign-in
+  URL**.
+</Step>
+</Steps>
+
+## Verifying your setup
+
+<Steps>
+<Step title="Test the first sign-in">
+  Open the Sign-in URL in a fresh browser and log in with a **non-admin** user.
+  Keep one admin session open and **SSO enforcement** optional until this works
+  end to end.
+</Step>
+<Step title="Require SSO">
+  Once sign-in is stable, switch **SSO enforcement** to **Required** and share the
+  Sign-in URL with your team.
+</Step>
+</Steps>
+
+<Note>
+  Group membership is read at login. If you change a user's groups in your IdP,
+  they need to sign in again for the new roles to apply in Gecko.
+</Note>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Login fails right after the IdP screen">
+    The **ACS URL** or **Entity ID** in your IdP doesn't match the values from
+    Gecko. Re-paste the shared ACS URL exactly, and the Entity ID exactly as
+    Gecko shows it.
+  </Accordion>
+  <Accordion title="The user isn't assigned to the app">
+    Assign the SAML app to that user (or their group/OU) in your IdP and wait a few
+    minutes.
+  </Accordion>
+  <Accordion title="Login works but the user isn't recognized">
+    Confirm the Name ID resolves to the user's email and the **Name ID format** is
+    `EmailAddress`. Gecko expects a stable work-email identity.
+  </Accordion>
+  <Accordion title="Login works but roles aren't assigned">
+    Confirm the IdP sends a `groups` attribute and that your Gecko role mappings
+    reference those group names.
+  </Accordion>
+  <Accordion title="Locked out after enforcing SSO">
+    Keep enforcement optional and an admin session open until the first login
+    succeeds. Contact the Gecko team to revert enforcement.
+  </Accordion>
+  <Accordion title="Using IdP-initiated SSO (launching from your IdP's app tile)?">
+    The default sign-in flow is SP-initiated and uses the shared ACS URL.
+    IdP-initiated logins need the connection-specific ACS instead:
+    `https://auth.gecko.security/login/callback?connection=<your-slug>`.
+    Contact the Gecko team to enable it.
+  </Accordion>
+</AccordionGroup>

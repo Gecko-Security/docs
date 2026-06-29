@@ -1,0 +1,105 @@
+/* Hero call-to-action buttons on the home page.
+   Uses markdown links (which Mintlify rewrites for the deployment base path)
+   styled as pill buttons, so they resolve correctly in local preview and in
+   production under the /docs subpath. */
+.hero-ctas {
+  margin-top: 2.25rem;
+}
+
+/* Mintlify renders the markdown paragraph as <span data-as="p">, not <p>. */
+.hero-ctas span[data-as="p"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.hero-ctas a {
+  border-radius: 9999px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+/* Custom brand logos (Linear, ClickUp, Shortcut, DefectDojo) are set via page
+   frontmatter, which Mintlify renders as <img>. An <img> ignores CSS color, so
+   the logos couldn't follow the sidebar's icon states the way Font Awesome icons
+   do. Re-render them as a mask, then fill with the exact same gray/primary
+   variables Mintlify uses for its own icons (bg-gray-400 / dark:bg-gray-500 when
+   inactive, bg-primary / dark:bg-primary-light when active). */
+img[src*="/logo/integrations/"] {
+  content: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+/* Inactive icon color (match Mintlify's bg-gray-400 / dark:bg-gray-500) */
+img[src*="/logo/integrations/"] {
+  background-color: rgb(var(--gray-400)) !important;
+}
+.dark img[src*="/logo/integrations/"] {
+  background-color: rgb(var(--gray-500)) !important;
+}
+
+/* Active icon color (match Mintlify's bg-primary / dark:bg-primary-light) */
+a[aria-current="page"] img[src*="/logo/integrations/"] {
+  background-color: rgb(var(--primary)) !important;
+}
+.dark a[aria-current="page"] img[src*="/logo/integrations/"] {
+  background-color: rgb(var(--primary-light)) !important;
+}
+
+img[src$="/logo/integrations/linear.svg"] {
+  -webkit-mask-image: url("/logo/integrations/linear.svg");
+  mask-image: url("/logo/integrations/linear.svg");
+}
+img[src$="/logo/integrations/clickup.svg"] {
+  -webkit-mask-image: url("/logo/integrations/clickup.svg");
+  mask-image: url("/logo/integrations/clickup.svg");
+}
+/* Shortcut's mark is a solid square that reaches the box corners, so it reads
+   larger than the round/chevron icons — inset it to match their optical size. */
+img[src$="/logo/integrations/shortcut.svg"] {
+  -webkit-mask-image: url("/logo/integrations/shortcut.svg");
+  mask-image: url("/logo/integrations/shortcut.svg");
+  -webkit-mask-size: 78%;
+  mask-size: 78%;
+}
+/* DefectDojo PNG is cropped to its content; inset slightly to match the others. */
+img[src$="/logo/integrations/defectdojo.png"] {
+  -webkit-mask-image: url("/logo/integrations/defectdojo.png?v=2");
+  mask-image: url("/logo/integrations/defectdojo.png?v=2");
+  -webkit-mask-size: 82%;
+  mask-size: 82%;
+}
+
+/* Primary button */
+.hero-ctas a:first-of-type {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+.hero-ctas a:first-of-type:hover {
+  opacity: 0.9;
+}
+
+/* Secondary button */
+.hero-ctas a:last-of-type {
+  border: 1px solid #e5e7eb;
+  color: inherit;
+}
+.hero-ctas a:last-of-type:hover {
+  background-color: #f3f4f6;
+}
+.dark .hero-ctas a:last-of-type {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.dark .hero-ctas a:last-of-type:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}

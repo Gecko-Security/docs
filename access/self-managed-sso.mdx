@@ -1,0 +1,68 @@
+---
+title: "Self-managed SSO"
+description: "Configure SSO end to end yourself, from inside Gecko, without involving the Gecko team."
+sidebarTitle: "Self-managed SSO"
+icon: "user-gear"
+---
+
+Self-managed SSO lets a team admin set up single sign-on entirely from inside
+Gecko — no back-and-forth with the Gecko team. It works with any SAML 2.0 or OIDC
+identity provider; you choose the protocol when you start, and configure the rest
+in the setup portal.
+
+<Info>
+  **You'll need:** Gecko **Enterprise** plan, a Gecko team admin, an admin on your
+  identity provider, and a test user who isn't the admin changing sign-in policy.
+</Info>
+
+## Set it up
+
+<Steps>
+<Step title="Save your team slug">
+  In **Settings > Single Sign-On & SCIM**, save a unique team slug. It becomes
+  your connection identifier and sign-in path, so your service-provider values are
+  based on it.
+
+  <Warning>
+    The slug is **read-only once SSO is connected**. Pick the final one now.
+  </Warning>
+</Step>
+
+<Step title="Start the connection">
+  Click **Connect** and choose **SAML** or **OIDC**. Gecko opens the setup portal,
+  which shows the values your IdP needs:
+  - **SAML:** ACS URL and Entity ID
+  - **OIDC:** the redirect (callback) URI
+</Step>
+
+<Step title="Create the app in your IdP">
+  Create a SAML or OIDC app in your identity provider using those values.
+  - **SAML:** set the Name ID and attributes — see
+    [SAML SSO Setup](/access/saml) for the exact field values.
+  - **OIDC:** create an OAuth client and note its **client ID**, **client
+    secret**, and **issuer / discovery URL**.
+
+  Assign the app to the users who should reach Gecko.
+</Step>
+
+<Step title="Finish in the portal">
+  Enter your IdP details back in the setup portal:
+  - **SAML:** sign-in URL and signing certificate
+  - **OIDC:** issuer/discovery URL, client ID, and client secret
+</Step>
+
+<Step title="Verify and test">
+  Return to Gecko and **verify**. The connection moves to **Connected** and Gecko
+  shows your team **Sign-in URL**. Open it in a fresh browser and log in with a
+  **non-admin** user.
+
+  Keep one admin session open and **SSO enforcement** optional until this works,
+  then switch enforcement to **Required**.
+</Step>
+</Steps>
+
+<Note>
+  Want Gecko to set the connection up for you instead? See
+  [SAML SSO Setup](/access/saml) for the managed exchange — you send us your IdP
+  details and we activate it.
+</Note>

@@ -1,0 +1,115 @@
+---
+title: "DefectDojo"
+icon: "/logo/integrations/defectdojo.png"
+description: "Push Gecko findings into DefectDojo and track ASVS compliance per repository."
+---
+
+If your team runs DefectDojo as its vulnerability-management hub, Gecko can push
+findings into it so they sit alongside the rest of your AppSec program, and map
+each repository to a DefectDojo **product** with its own
+[ASVS](https://owasp.org/www-project-application-security-verification-standard/)
+compliance profile. Configure it in **Settings** &gt; **DefectDojo**.
+
+This is a one-way export, like the
+[GitLab vulnerability export](/gitlab-vulnerability-export): Gecko keeps DefectDojo
+in sync as scans run, while triage in Gecko stays the source of truth for the rich
+[call chain](/concepts/findings), proof of concept, and patch. When a finding is
+fixed in Gecko, the matching DefectDojo finding is updated too.
+
+## Prerequisites
+
+- A DefectDojo instance (self-hosted or Cloud) that Gecko can reach over HTTPS.
+  For self-hosted instances behind a firewall, allow Gecko's
+  [egress IPs](/connect/network-allowlist).
+- A DefectDojo **API v2 key** to authenticate the connection.
+- The Admin or Manager role in Gecko. See [Teams & permissions](/teams-permissions).
+
+## Connect DefectDojo
+
+<Steps>
+  <Step title="Copy your DefectDojo API v2 key">
+    In DefectDojo, open your user profile and go to **API v2 Key**. Copy the
+    token. The key inherits that user's permissions, so use an account that can
+    create products and import findings.
+  </Step>
+  <Step title="Add the connection in Gecko">
+    Go to **Settings** &gt; **DefectDojo**, then enter your instance URL (for
+    example `https://defectdojo.example.com`) and paste the API v2 key.
+    Click **Connect**.
+
+    Gecko verifies the connection immediately. If the URL is unreachable or the
+    key is rejected, Gecko shows the error inline — confirm the instance is
+    reachable from Gecko's [egress IPs](/connect/network-allowlist) and that the
+    key is still valid, then try again.
+  </Step>
+  <Step title="Map a repository to a product">
+    Choose a connected repository and map it to a DefectDojo **product**. Gecko
+    creates the product if it doesn't exist yet. Assign the repository's
+    [ASVS level and sections](#asvs-compliance-tracking) while you're here, or
+    adjust them later.
+  </Step>
+  <Step title="Run a scan to verify">
+    Open the repository and run a [scan](/scanning/run-a-scan). When it completes,
+    Gecko pushes the findings to the mapped product — open it in DefectDojo to
+    confirm they landed.
+  </Step>
+</Steps>
+
+## How it works
+
+Each connected repository maps to a DefectDojo **product**. When a scan completes,
+Gecko pushes that repository's findings into its product so DefectDojo reflects the
+current state of the codebase:
+
+- **Push on scan complete** — Gecko syncs findings to DefectDojo automatically
+  after every scan. Turn it off to pause exports.
+- **Include resolved findings** — when a finding is resolved in Gecko, it's marked
+  as mitigated in DefectDojo instead of being left open.
+
+The connection is shown at the top of the page along with your instance URL, the
+number of repositories mapped to products, and the total ASVS sections tracked
+across them.
+
+## ASVS compliance tracking
+
+Beyond pushing findings, Gecko tracks each repository against the
+[OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/)
+so you can see which verification areas each product is expected to meet:
+
+- **Level** — every repository is assigned an ASVS level (**L1**, **L2**, or
+  **L3**) reflecting how much rigor its risk profile demands.
+- **Sections** — each repository carries the ASVS sections relevant to it (for
+  example, `V6` Authentication and `V7` Session Management for an auth service).
+
+The settings page lists every repository with its provider, level, and mapped
+sections. From the row menu you can:
+
+- **View vulnerabilities** — jump to the repository's findings in Gecko.
+- **Edit sections** — adjust which ASVS sections apply to the repository.
+- **Remove mapping** — stop mapping the repository to a DefectDojo product.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Connection fails when saving the API key">
+    Gecko couldn't reach DefectDojo or the key was rejected. Confirm the instance
+    URL is correct and served over HTTPS, that the API v2 key hasn't been rotated,
+    and — for self-hosted instances behind a firewall — that Gecko's
+    [egress IPs](/connect/network-allowlist) are allowed.
+  </Accordion>
+  <Accordion title="Findings aren't appearing in DefectDojo">
+    Check that **Push on scan complete** is enabled and that the repository is
+    mapped to a product. Findings are pushed when a scan finishes, so run a fresh
+    [scan](/scanning/run-a-scan) if the mapping was added after the last one.
+  </Accordion>
+  <Accordion title="Resolved findings stay open in DefectDojo">
+    Enable **Include resolved findings** so Gecko marks resolved findings as
+    mitigated instead of leaving them open.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  This is distinct from connecting source control for scanning. DefectDojo is an
+  export target for findings Gecko has already produced — connect
+  [GitHub](/connect/github) or [GitLab](/connect/gitlab) first.
+</Note>

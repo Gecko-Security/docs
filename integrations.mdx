@@ -1,5 +1,6 @@
 ---
 title: "Integrations"
+icon: "puzzle-piece"
 description: "Connect Gecko to source control, issue trackers, and notifications."
 ---
 
@@ -43,8 +44,19 @@ supports an **auto-create** option to file work for findings after every scan.
   <Card title="Slack" icon="slack" href="/slack-integration">
     Scan notifications routed per repository, filtered by severity.
   </Card>
+</CardGroup>
+
+## Vulnerability management
+
+Export findings one-way into a security platform, where they stay in sync as
+scans run. Triage in Gecko remains the source of truth.
+
+<CardGroup cols={2}>
   <Card title="GitLab vulnerability export" icon="shield-halved" href="/gitlab-vulnerability-export">
     Surface findings in GitLab's native Security Dashboard.
+  </Card>
+  <Card title="DefectDojo" icon="bugs" href="/defectdojo-integration">
+    Push findings into DefectDojo for centralized vulnerability management.
   </Card>
 </CardGroup>
 

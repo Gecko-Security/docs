@@ -76,7 +76,8 @@
               "slack-integration",
               "clickup-integration",
               "shortcut-integration",
-              "gitlab-vulnerability-export"
+              "gitlab-vulnerability-export",
+              "defectdojo-integration"
             ]
           },
           {
@@ -84,6 +85,8 @@
             "pages": [
               "teams-permissions",
               "access/okta-saml-onboarding",
+              "access/saml",
+              "access/self-managed-sso",
               "admin/api-keys",
               "admin/audit-log",
               "admin/billing"
