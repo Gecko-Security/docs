@@ -63,10 +63,14 @@ differ.
 | Attribute | Claim name | Required |
 | --- | --- | --- |
 | Email | `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress` | Yes |
-| Display name | `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name` | Recommended |
+| First name | `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname` | Recommended |
+| Last name | `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname` | Recommended |
 | Groups | `groups` | Only for group-based role mapping |
 
-The Name ID above already carries the email, which satisfies the minimum.
+The Name ID above already carries the email, which satisfies the minimum. Send
+first and last name too so Gecko can show real names on assignees and in the
+audit log; providers that only expose atomic fields (such as Google Workspace)
+have no single display-name attribute, so map the two separately.
 
 ## Set up the connection
 
@@ -95,8 +99,11 @@ The Name ID above already carries the email, which satisfies the minimum.
       4. On **Service provider details**, paste Gecko's **ACS URL** and
          **Entity ID** from the table above. Set **Name ID format** to `EMAIL` and
          **Name ID** to **Basic Information > Primary email**.
-      5. On **Attribute mapping**, map **Primary email** (and optionally name) to
-         the claim names in the Attributes table above, then click **Finish**.
+      5. On **Attribute mapping**, map **First name** and **Last name** to the
+         given-name and surname claims in the Attributes table above. Google has
+         no single display-name field, so map the two separately; Gecko composes
+         the name from them. (Primary email is already covered by the Name ID.)
+         Click **Finish**.
       6. Open the app, click **User access**, and turn it **On** for everyone or
          the org units that should use Gecko.
     </Accordion>
