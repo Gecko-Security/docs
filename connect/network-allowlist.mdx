@@ -79,8 +79,8 @@ backend. How you filter depends on the load balancer type:
 
 | Load balancer | Layer | Source IP | Where to allowlist |
 | --- | --- | --- | --- |
-| **Network (NLB)** | Layer 4 (TCP) | Preserved — backends see Gecko's real source IP | At the NLB, or on backends using the original IP |
-| **Application (ALB)** | Layer 7 (HTTP) | Rewritten via NAT — backends see the load balancer's IP | On backends using `X-Forwarded-For`, since the source IP is no longer Gecko's |
+| **Network (NLB)** | Layer 4 (TCP) | Preserved, so backends see Gecko's real source IP | At the NLB, or on backends using the original IP |
+| **Application (ALB)** | Layer 7 (HTTP) | Rewritten via NAT, so backends see the load balancer's IP | On backends using `X-Forwarded-For`, since the source IP is no longer Gecko's |
 
 An NLB is usually simpler: because it preserves the source IP, you can filter
 directly at the load balancer and your backends still see Gecko's real address.
@@ -123,12 +123,12 @@ After you add the addresses, reconnect in Gecko:
 <Tip>
   Test connectivity from a host outside your network before you connect in
   Gecko. If an external client can't reach your instance over HTTPS, Gecko
-  won't either — and you'll have ruled out the allowlist as the cause.
+  won't either, and you'll have ruled out the allowlist as the cause.
 </Tip>
 
 ## Best practices
 
-- Serve your instance over **HTTPS with a valid certificate** — Gecko rejects
+- Serve your instance over **HTTPS with a valid certificate**. Gecko rejects
   non-HTTPS instance URLs and those pointing at private or loopback addresses.
 - Use a **dedicated service account** for the connection so access is easy to
   audit and revoke.

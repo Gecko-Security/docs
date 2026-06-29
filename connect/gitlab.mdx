@@ -50,7 +50,7 @@ merge-request comments, and open fix merge requests.
     <Tab title="Self-managed">
       Use your instance's base URL, for example `https://gitlab.example.com`.
       The instance must be reachable over HTTPS. If access is IP-restricted,
-      allowlist [Gecko's three IP addresses](/connect/network-allowlist) first —
+      allowlist [Gecko's three IP addresses](/connect/network-allowlist) first,
       directly at your firewall or group settings, or behind a load balancer.
     </Tab>
     <Tab title="GitLab Dedicated">
@@ -104,7 +104,7 @@ with a valid token. GitLab.com needs none of this.
   Your instance must be reachable over **HTTPS** with a valid certificate, and
   you need access to wherever IP access is enforced (GitLab settings, Switchboard,
   or your firewall). Get Gecko's current IP addresses from your Gecko account
-  contact — the canonical list lives on
+  contact; the canonical list lives on
   [Network & IP allowlist](/connect/network-allowlist#ip-addresses-to-allow).
 </Step>
 
@@ -132,8 +132,8 @@ with a valid token. GitLab.com needs none of this.
 
 <Step title="Verify">
   A populated repository list confirms the **frontend** addresses are allowed;
-  a successful scan confirms the **scanner** address is allowed. Allow all three
-  — a partial allowlist causes confusing, partial failures.
+  a successful scan confirms the **scanner** address is allowed. Allow all three;
+  a partial allowlist causes confusing, partial failures.
 </Step>
 </Steps>
 

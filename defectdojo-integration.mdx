@@ -38,7 +38,7 @@ fixed in Gecko, the matching DefectDojo finding is updated too.
     Click **Connect**.
 
     Gecko verifies the connection immediately. If the URL is unreachable or the
-    key is rejected, Gecko shows the error inline — confirm the instance is
+    key is rejected, Gecko shows the error inline. Confirm the instance is
     reachable from Gecko's [egress IPs](/connect/network-allowlist) and that the
     key is still valid, then try again.
   </Step>
@@ -50,7 +50,7 @@ fixed in Gecko, the matching DefectDojo finding is updated too.
   </Step>
   <Step title="Run a scan to verify">
     Open the repository and run a [scan](/scanning/run-a-scan). When it completes,
-    Gecko pushes the findings to the mapped product — open it in DefectDojo to
+    Gecko pushes the findings to the mapped product. Open it in DefectDojo to
     confirm they landed.
   </Step>
 </Steps>
@@ -61,9 +61,9 @@ Each connected repository maps to a DefectDojo **product**. When a scan complete
 Gecko pushes that repository's findings into its product so DefectDojo reflects the
 current state of the codebase:
 
-- **Push on scan complete** — Gecko syncs findings to DefectDojo automatically
+- **Push on scan complete**: Gecko syncs findings to DefectDojo automatically
   after every scan. Turn it off to pause exports.
-- **Include resolved findings** — when a finding is resolved in Gecko, it's marked
+- **Include resolved findings**: when a finding is resolved in Gecko, it's marked
   as mitigated in DefectDojo instead of being left open.
 
 The connection is shown at the top of the page along with your instance URL, the
@@ -74,19 +74,27 @@ across them.
 
 Beyond pushing findings, Gecko tracks each repository against the
 [OWASP ASVS](https://owasp.org/www-project-application-security-verification-standard/)
-so you can see which verification areas each product is expected to meet:
+so you can see which verification areas each product is expected to meet. Gecko
+auto-detects which ASVS chapters apply to a repository from what the code does,
+so you don't map them by hand:
 
-- **Level** — every repository is assigned an ASVS level (**L1**, **L2**, or
+- **Standard version**: choose which ASVS version Gecko tracks against, set on the
+  DefectDojo connection. New connections default to the latest, **ASVS 5.0**. Match
+  this to the version your DefectDojo benchmark uses (DefectDojo can run an older
+  set such as 4.0.3), since the chapter numbers differ between versions. For
+  example, Authentication is `V6` in 5.0 but `V2` in 4.0.3.
+- **Level**: every repository is assigned an ASVS level (**L1**, **L2**, or
   **L3**) reflecting how much rigor its risk profile demands.
-- **Sections** — each repository carries the ASVS sections relevant to it (for
-  example, `V6` Authentication and `V7` Session Management for an auth service).
+- **Sections**: each repository carries the ASVS chapters relevant to it (for
+  example, `V6` Authentication and `V7` Session Management for an auth service
+  under ASVS 5.0).
 
 The settings page lists every repository with its provider, level, and mapped
 sections. From the row menu you can:
 
-- **View vulnerabilities** — jump to the repository's findings in Gecko.
-- **Edit sections** — adjust which ASVS sections apply to the repository.
-- **Remove mapping** — stop mapping the repository to a DefectDojo product.
+- **View vulnerabilities**: jump to the repository's findings in Gecko.
+- **Edit sections**: adjust which ASVS sections apply to the repository.
+- **Remove mapping**: stop mapping the repository to a DefectDojo product.
 
 ## Troubleshooting
 
@@ -94,7 +102,7 @@ sections. From the row menu you can:
   <Accordion title="Connection fails when saving the API key">
     Gecko couldn't reach DefectDojo or the key was rejected. Confirm the instance
     URL is correct and served over HTTPS, that the API v2 key hasn't been rotated,
-    and — for self-hosted instances behind a firewall — that Gecko's
+    and, for self-hosted instances behind a firewall, that Gecko's
     [egress IPs](/connect/network-allowlist) are allowed.
   </Accordion>
   <Accordion title="Findings aren't appearing in DefectDojo">
@@ -110,6 +118,6 @@ sections. From the row menu you can:
 
 <Note>
   This is distinct from connecting source control for scanning. DefectDojo is an
-  export target for findings Gecko has already produced — connect
+  export target for findings Gecko has already produced. Connect
   [GitHub](/connect/github) or [GitLab](/connect/gitlab) first.
 </Note>

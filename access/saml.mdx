@@ -5,7 +5,7 @@ sidebarTitle: "SAML SSO Setup"
 icon: "id-card"
 ---
 
-Gecko supports SAML 2.0 single sign-on with any compliant identity provider —
+Gecko supports SAML 2.0 single sign-on with any compliant identity provider:
 Okta, Microsoft Entra ID, Google Workspace, Ping, OneLogin, and others. Your IdP
 admin creates a SAML app, exchanges a few values with Gecko, and assigns it to
 users. After setup, your team opens the Gecko sign-in URL, authenticates at your
@@ -16,7 +16,7 @@ differ.
 
 <Note>
   Prefer to configure it yourself, end to end, without involving the Gecko team?
-  See [Self-managed SSO](/access/self-managed-sso) — the field values below are
+  See [Self-managed SSO](/access/self-managed-sso). The field values below are
   the same.
 </Note>
 
@@ -28,7 +28,7 @@ differ.
   - A test user who isn't the admin changing sign-in policy
 </Info>
 
-**Service provider (SP) values** — entered into your IdP's SAML app:
+**Service provider (SP) values**, entered into your IdP's SAML app:
 
 | Field | Value |
 | --- | --- |
@@ -38,10 +38,10 @@ differ.
 | Name ID value | the user's work email |
 
 <Note>
-  The **ACS URL is the same for every team** — use it as-is. Only the **Entity ID**
+  The **ACS URL is the same for every team**. Use it as-is. Only the **Entity ID**
   is specific to you: it ends in your **team slug**, which is your connection ID.
   For example, a Blackstone team's slug is `gecko-blackstone`, making its Entity ID
-  `urn:auth0:dev-8q5eplvvn6e1pw4u:gecko-blackstone`. Set the slug first — it becomes
+  `urn:auth0:dev-8q5eplvvn6e1pw4u:gecko-blackstone`. Set the slug first; it becomes
   read-only once SSO is connected. The Entity ID uses a different host than the ACS
   URL; that's expected.
 </Note>
@@ -54,11 +54,11 @@ differ.
   ```
 
   It carries the ACS URL, Entity ID, and Gecko's request-signing certificate, and
-  enables signed-request verification — so you don't have to paste the values
+  enables signed-request verification, so you don't have to paste the values
   individually.
 </Tip>
 
-**Attributes** — what your IdP must send in the assertion:
+**Attributes**, what your IdP must send in the assertion:
 
 | Attribute | Claim name | Required |
 | --- | --- | --- |
@@ -82,14 +82,14 @@ The Name ID above already carries the email, which satisfies the minimum.
 
   <Note>
     Where to create the SAML app, by provider:
-    **Okta** — Applications → Create App Integration → SAML 2.0 ·
-    **Entra ID** — Enterprise applications → New application → Create your own ·
-    **Google Workspace** — Admin console → Apps → Web and mobile apps → Add custom SAML app
+    **Okta**: Applications → Create App Integration → SAML 2.0 ·
+    **Entra ID**: Enterprise applications → New application → Create your own ·
+    **Google Workspace**: Admin console → Apps → Web and mobile apps → Add custom SAML app
   </Note>
 </Step>
 <Step title="Send Gecko your IdP details">
   Send us your **sign-in URL**, **Entity ID**, **X.509 certificate**, and
-  **verified domain(s)** — or your IdP's **metadata XML**, which contains all
+  **verified domain(s)**, or your IdP's **metadata XML**, which contains all
   three.
 </Step>
 <Step title="We activate it">
