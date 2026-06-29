@@ -1,0 +1,123 @@
+---
+title: "Personal connections"
+icon: "user-check"
+description: "Link your own GitLab account so the actions you trigger are attributed to you, not the shared service account."
+---
+
+{/* DRAFT: documents target behavior for per-user GitLab identity linking. Not yet
+    implemented. Keep out of docs.json navigation until the feature ships. */}
+
+Gecko writes back to GitLab in two situations: it acts on its own (posting scan
+findings as merge-request comments, opening fix MRs) and it acts on your behalf
+when you trigger something (asking for a fix, running a `/gecko` command on an
+MR). **Personal connections** let the second kind of action be authored under
+**your** GitLab identity instead of the shared service account.
+
+## Two layers of identity
+
+Gecko separates the team's automated identity from each member's personal one:
+
+| Layer | Who it is | Used for |
+| --- | --- | --- |
+| **Service account** | The team's [GitLab service account](/connect/gitlab#connect) | Gecko's autonomous actions, and a fallback for any member who hasn't linked |
+| **Personal connection** | Your own GitLab account | Actions you explicitly trigger, attributed to you |
+
+The service account is configured once for the whole team and is required.
+Personal connections are optional and configured per member.
+
+<Note>
+  If no one links a personal account, Gecko behaves exactly as before: every
+  write is authored by the service account. Personal connections only change
+  attribution for the member who opts in.
+</Note>
+
+## What gets attributed to whom
+
+| Action | Without a personal connection | With a personal connection |
+| --- | --- | --- |
+| Scan findings posted as MR comments | Service account | Service account (always — these aren't triggered by a person) |
+| Fix MR opened automatically | Service account | Service account |
+| Fix MR you requested from the dashboard | Service account | **You** |
+| `/gecko` command you run on an MR | Service account | **You** |
+| Commit pushed by a command you ran | Service account | **You** |
+
+The rule: **autonomous** actions stay on the service account; **member-initiated**
+actions follow that member's personal connection when one exists, and fall back
+to the service account when it doesn't.
+
+## Link your GitLab account
+
+<Steps>
+<Step title="Open your personal connections">
+  Go to **Settings** &gt; **Personal Connections** and click **Connect** on
+  GitLab. This is per-user: linking your account doesn't affect anyone else on
+  the team.
+</Step>
+
+<Step title="Authorize Gecko">
+  <Tabs>
+    <Tab title="GitLab.com">
+      Gecko redirects you to GitLab to authorize the connection over OAuth.
+      Approve the requested scopes and you'll be redirected back.
+    </Tab>
+    <Tab title="Self-managed / Dedicated">
+      Create a personal access token on your own account with the `api` scope and
+      paste it in, along with the same instance URL your team uses. Self-managed
+      and Dedicated instances must already be reachable by Gecko — see
+      [Network & IP allowlist](/connect/network-allowlist).
+    </Tab>
+  </Tabs>
+</Step>
+
+<Step title="Confirm">
+  Gecko validates the connection with `GET /api/v4/user` and shows the GitLab
+  username it will act as for you. From now on, actions you trigger are authored
+  under that account.
+</Step>
+</Steps>
+
+<Warning>
+  Your personal connection only works on repositories **your** GitLab account
+  can already access with at least the **Developer** role. If you trigger an
+  action on a project you can't write to, it falls back to the service account
+  (or fails if the service account also lacks access).
+</Warning>
+
+## Requirements
+
+- A team-level [service account connection](/connect/gitlab) must already be set
+  up. Personal connections layer on top of it; they don't replace it.
+- Each personal connection needs the `api` scope, the same as the service
+  account, so it can post comments and push commits.
+- On self-managed and GitLab Dedicated, every member's traffic still arrives from
+  [Gecko's IP addresses](/connect/network-allowlist) — there's nothing extra to
+  allowlist per user.
+
+## Manage and revoke
+
+- **See who's linked**: team owners can view which members have a personal
+  connection in **Settings** &gt; **GitLab**.
+- **Unlink yourself**: remove your connection from **Settings** &gt; **Personal
+  Connections** at any time. Your future actions revert to the service account.
+- **Rotation**: if you used a token (self-managed), rotate it on your team's
+  normal schedule. An expired personal token falls back to the service account
+  until you re-link.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="My actions still show up as the service account">
+    Either you haven't linked a personal connection, or the action was an
+    autonomous one (scan findings, auto-opened fix MRs) that always uses the
+    service account. Only actions you explicitly trigger follow your personal
+    connection.
+  </Accordion>
+  <Accordion title="My personal connection fails on a specific repo">
+    Your GitLab account needs at least the Developer role on that project.
+    Confirm your own access in GitLab; Gecko can't grant you more than you have.
+  </Accordion>
+  <Accordion title="My token expired">
+    Gecko falls back to the service account for your actions until you re-link
+    with a fresh token. Re-connect in **Settings** &gt; **Personal Connections**.
+  </Accordion>
+</AccordionGroup>
