@@ -57,25 +57,25 @@ a[aria-current="page"] img[src*="/logo/integrations/"] {
 }
 
 img[src$="/logo/integrations/linear.svg"] {
-  -webkit-mask-image: url("/logo/integrations/linear.svg");
-  mask-image: url("/logo/integrations/linear.svg");
+  -webkit-mask-image: url("/docs/logo/integrations/linear.svg");
+  mask-image: url("/docs/logo/integrations/linear.svg");
 }
 img[src$="/logo/integrations/clickup.svg"] {
-  -webkit-mask-image: url("/logo/integrations/clickup.svg");
-  mask-image: url("/logo/integrations/clickup.svg");
+  -webkit-mask-image: url("/docs/logo/integrations/clickup.svg");
+  mask-image: url("/docs/logo/integrations/clickup.svg");
 }
 /* Shortcut's mark is a solid square that reaches the box corners, so it reads
    larger than the round/chevron icons — inset it to match their optical size. */
 img[src$="/logo/integrations/shortcut.svg"] {
-  -webkit-mask-image: url("/logo/integrations/shortcut.svg");
-  mask-image: url("/logo/integrations/shortcut.svg");
+  -webkit-mask-image: url("/docs/logo/integrations/shortcut.svg");
+  mask-image: url("/docs/logo/integrations/shortcut.svg");
   -webkit-mask-size: 78%;
   mask-size: 78%;
 }
 /* DefectDojo PNG is cropped to its content; inset slightly to match the others. */
 img[src$="/logo/integrations/defectdojo.png"] {
-  -webkit-mask-image: url("/logo/integrations/defectdojo.png?v=2");
-  mask-image: url("/logo/integrations/defectdojo.png?v=2");
+  -webkit-mask-image: url("/docs/logo/integrations/defectdojo.png?v=2");
+  mask-image: url("/docs/logo/integrations/defectdojo.png?v=2");
   -webkit-mask-size: 82%;
   mask-size: 82%;
 }
