@@ -78,14 +78,42 @@ The Name ID above already carries the email, which satisfies the minimum.
 </Step>
 <Step title="Create the SAML app in your IdP">
   Create a SAML 2.0 app using those values. Set the **Name ID** and map the
-  **attributes** above, then assign your users.
+  **attributes** above, then assign your users. Where this lives depends on your
+  provider:
 
-  <Note>
-    Where to create the SAML app, by provider:
-    **Okta**: Applications → Create App Integration → SAML 2.0 ·
-    **Entra ID**: Enterprise applications → New application → Create your own ·
-    **Google Workspace**: Admin console → Apps → Web and mobile apps → Add custom SAML app
-  </Note>
+  <AccordionGroup>
+    <Accordion title="Google Workspace">
+      Set this up in the **Google Admin console** at
+      [admin.google.com](https://admin.google.com) as a **super admin**, not from
+      Gmail or a regular user account.
+
+      1. Go to **Apps → Web and mobile apps**, then **Add app → Add custom SAML app**.
+      2. Name the app (for example, `Gecko`) and click **Continue**.
+      3. On **Google Identity Provider details**, copy the **SSO URL** and
+         **Entity ID** and download the **Certificate** (or **Download metadata**).
+         These are the IdP details you send Gecko in the next step.
+      4. On **Service provider details**, paste Gecko's **ACS URL** and
+         **Entity ID** from the table above. Set **Name ID format** to `EMAIL` and
+         **Name ID** to **Basic Information > Primary email**.
+      5. On **Attribute mapping**, map **Primary email** (and optionally name) to
+         the claim names in the Attributes table above, then click **Finish**.
+      6. Open the app, click **User access**, and turn it **On** for everyone or
+         the org units that should use Gecko.
+    </Accordion>
+    <Accordion title="Okta">
+      In the Okta admin console: **Applications → Create App Integration →
+      SAML 2.0**. Enter Gecko's **ACS URL** and **Entity ID**, set the **Name ID**
+      and attributes, then assign users. The app's **Sign On** tab exposes the
+      **identity provider metadata** URL you send Gecko in the next step.
+    </Accordion>
+    <Accordion title="Microsoft Entra ID">
+      In the Entra admin center: **Enterprise applications → New application →
+      Create your own application** (non-gallery). Under **Single sign-on → SAML**,
+      enter Gecko's **ACS URL** (Reply URL) and **Entity ID**, configure the
+      claims, then assign users. The **SAML Certificates** section there holds the
+      **Federation Metadata XML** you send Gecko in the next step.
+    </Accordion>
+  </AccordionGroup>
 </Step>
 <Step title="Send Gecko your IdP details">
   Send us your **sign-in URL**, **Entity ID**, **X.509 certificate**, and
