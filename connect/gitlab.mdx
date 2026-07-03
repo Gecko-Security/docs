@@ -1,37 +1,76 @@
 ---
 title: "Connect GitLab"
 icon: "gitlab"
-description: "Connect GitLab.com, self-managed GitLab, or GitLab Dedicated with an access token."
+description: "Connect GitLab.com to Gecko in minutes with an access token."
 ---
 
-Gecko connects to GitLab with a **GitLab access token** and your instance URL.
-Gecko validates the token, stores the instance URL for your team, and uses the
-token to list repositories, read project metadata, clone code for scans, post
-merge-request comments, and open fix merge requests.
+Gecko connects to GitLab.com with a **GitLab access token**. Gecko validates
+the token, then uses it to list repositories, read project metadata, clone code
+for scans, post merge-request comments, and open fix merge requests.
 
-<Warning>
-  **Self-managed GitLab is usually network-restricted.** If your GitLab group,
-  instance, or network limits access by IP, allowlist Gecko's three IP addresses
-  (one scanner, two frontend) **before** you connect, otherwise token
-  validation, repo sync, and clones will fail even with a valid token. See
-  [Network & IP allowlist](/connect/network-allowlist).
-</Warning>
+GitLab.com is a cloud service reachable from anywhere, so there is **no
+network setup**: no IP allowlisting, no firewall changes, no admin rollout.
+Connecting takes a few minutes.
+
+<Note>
+  Running GitLab on your own infrastructure or on GitLab Dedicated? That is a
+  different setup with its own identity and network model. See
+  [Connect self-managed GitLab](/connect/gitlab-self-managed).
+</Note>
+
+## Before you start
+
+You need:
+
+- **In GitLab**: an account with **Developer or higher** on the repositories
+  you want to scan, and **Maintainer** on the project (or **Owner** on the
+  group) to add the webhook. Webhook creation needs a higher role than the
+  token does, and it's the step people usually get stuck on.
+- **In Gecko**: admin access to **Settings**.
+
+Setup takes about 10 minutes.
+
+## How the integration works
+
+Two Gecko components talk to GitLab.com, and GitLab sends events back to
+Gecko:
+
+```mermaid
+flowchart LR
+  subgraph Gecko["Gecko"]
+    F["Gecko frontend"]
+    S["Gecko scanner"]
+  end
+  subgraph GL["GitLab.com"]
+    API["REST API · /api/v4"]
+    REPO["Repositories · HTTPS clone"]
+    WH["Webhooks"]
+  end
+  F -->|"token · validate · sync repos · MR comments"| API
+  S -->|"token · clone code for scans"| REPO
+  WH -->|"push · merge request · vulnerability events"| F
+```
+
+1. **Gecko frontend → GitLab API.** Validates the token, syncs the repository
+   list, reads branches and MR metadata, posts MR comments, opens fix MRs.
+2. **Gecko scanner → GitLab.** Clones the selected repositories over HTTPS at
+   scan time, authenticated with the same token.
+3. **GitLab → Gecko.** Webhooks notify Gecko when code is pushed or a merge
+   request opens or updates, so [PR checks](/scanning/pr-checks) run without
+   polling.
 
 ## Connect
 
 <Steps>
-<Step title="Create a GitLab access token">
-  In GitLab, create a personal, group, or service-account token on an account
-  that can access the repositories you want Gecko to scan:
+<Step title="Create an access token">
+  In GitLab, create a personal access token, or, for production, a
+  [group access token](https://docs.gitlab.com/user/group/settings/group_access_tokens/)
+  so the connection survives if the person who set it up leaves:
 
   - **Name**: `Gecko Security`
   - **Expiration**: 1 year, or your team's standard rotation window
   - **Role**: Developer or higher on the target projects
   - **Scope**: `api`
-
-  GitLab requires an expiration date unless an administrator has changed that
-  policy. See
-  [GitLab personal access tokens](https://docs.gitlab.com/user/profile/personal_access_tokens/).
 
   <Note>
     The `api` scope is required to post comments on merge requests. With a
@@ -40,29 +79,9 @@ merge-request comments, and open fix merge requests.
 </Step>
 
 <Step title="Add the token in Gecko">
-  Go to **Settings** &gt; **GitLab** and enter your instance URL and token. Use
-  the base URL only. Do **not** include `/api/v4`.
-
-  <Tabs>
-    <Tab title="GitLab.com">
-      Use `https://gitlab.com` as the instance URL. No IP allowlisting needed.
-    </Tab>
-    <Tab title="Self-managed">
-      Use your instance's base URL, for example `https://gitlab.example.com`.
-      The instance must be reachable over HTTPS. If access is IP-restricted,
-      allowlist [Gecko's three IP addresses](/connect/network-allowlist) first,
-      directly at your firewall or group settings, or behind a load balancer.
-    </Tab>
-    <Tab title="GitLab Dedicated">
-      Use your tenant URL, then add
-      [Gecko's IP addresses](/connect/network-allowlist) to the Switchboard IP
-      allowlist.
-    </Tab>
-  </Tabs>
-
-  Gecko validates the token with `GET {instance}/api/v4/user`. For security,
-  Gecko rejects instance URLs that aren't HTTPS or that point at private or
-  loopback addresses.
+  Go to **Settings** &gt; **GitLab**, enter `https://gitlab.com` as the
+  instance URL, and paste the token. Gecko validates it with
+  `GET https://gitlab.com/api/v4/user`.
 </Step>
 
 <Step title="Select repositories">
@@ -72,70 +91,37 @@ merge-request comments, and open fix merge requests.
 </Step>
 
 <Step title="Configure the webhook">
-  Gecko shows a webhook URL and a secret token. In GitLab, go to **Settings** &gt;
-  **Webhooks**, paste the URL, put the secret in **Secret token**, and enable:
-
-  - **Merge request events**
-  - **Push events**
-  - **Vulnerability events**
-
-  Gecko verifies the `X-Gitlab-Token` header on every webhook. See
+  Gecko shows a webhook URL and a secret token. In GitLab, go to **Settings**
+  &gt; **Webhooks**, paste the URL, put the secret in **Secret token**, and
+  enable **Merge request events**, **Push events**, and **Vulnerability
+  events**. Gecko verifies the `X-Gitlab-Token` header on every delivery. See
   [Webhooks](/connect/webhooks).
 </Step>
 </Steps>
 
-## Where Gecko runs
+## Verify the connection
 
-| Deployment | Instance URL | Notes |
-| --- | --- | --- |
-| GitLab.com | `https://gitlab.com` | Cloud; no IP allowlist needed. |
-| Self-managed | Your base URL | Reachable over HTTPS. Allowlist Gecko's IP addresses if access is IP-restricted. |
-| GitLab Dedicated | Your tenant URL | Add Gecko's IP addresses to the Switchboard IP allowlist. |
+You're done when all three of these are true, in order:
 
-## Network and IP allowlist (self-managed)
+1. **The repository list is populated** in Gecko. The token is valid and has
+   the right memberships.
+2. **A [baseline scan](/scanning/run-a-scan) completes** on one repository.
+   Cloning works.
+3. **A test merge request gets a Gecko comment.** The webhook and the `api`
+   scope both work. Open a draft MR that touches any file, then check the
+   webhook's **Recent events** in GitLab for a `200` if nothing appears.
 
-Self-managed GitLab and GitLab Dedicated usually **restrict access by IP**. If
-yours does, allowlist Gecko's three IP addresses (one scanner, two frontend)
-**before** you connect, or token validation, repo sync, and clones all fail even
-with a valid token. GitLab.com needs none of this.
+## Who sees what
 
-<Steps>
-<Step title="Confirm prerequisites">
-  Your instance must be reachable over **HTTPS** with a valid certificate, and
-  you need access to wherever IP access is enforced (GitLab settings, Switchboard,
-  or your firewall). Get Gecko's current IP addresses from your Gecko account
-  contact; the canonical list lives on
-  [Network & IP allowlist](/connect/network-allowlist#ip-addresses-to-allow).
-</Step>
-
-<Step title="Add the addresses where GitLab enforces IP access">
-  <AccordionGroup>
-    <Accordion title="Self-managed: group IP restriction">
-      **Settings** &gt; **General** &gt; **Permissions and group features** &gt;
-      **Restrict access by IP address**. Enter each address in CIDR notation
-      (for example, `203.0.113.5/32`). See
-      [GitLab group access and permissions](https://docs.gitlab.com/user/group/access_and_permissions/).
-    </Accordion>
-    <Accordion title="GitLab Dedicated: Switchboard allowlist">
-      In Switchboard, open **Configuration** &gt; **IP allowlist** and add each
-      address. See
-      [GitLab Dedicated network security](https://docs.gitlab.com/administration/dedicated/configure_instance/network_security/).
-    </Accordion>
-    <Accordion title="Behind a firewall or load balancer">
-      If a firewall, proxy, or load balancer sits in front of your instance,
-      allow inbound HTTPS from the three addresses there. For the NLB-vs-ALB
-      source-IP details, see
-      [Network & IP allowlist](/connect/network-allowlist#behind-a-load-balancer).
-    </Accordion>
-  </AccordionGroup>
-</Step>
-
-<Step title="Verify">
-  A populated repository list confirms the **frontend** addresses are allowed;
-  a successful scan confirms the **scanner** address is allowed. Allow all three;
-  a partial allowlist causes confusing, partial failures.
-</Step>
-</Steps>
+The token is a team-level credential: it decides which repositories exist in
+Gecko and authors every MR comment. What each dashboard user **sees** is
+personal: they link their own GitLab.com account from **Settings** &gt;
+**Sign-in methods** &gt; **Connect GitLab** (Gecko's OAuth app on GitLab.com
+is pre-registered, so there's nothing to configure), and Gecko shows them
+only the synced repositories their GitLab user can access. The link is
+read-only; their [role](/teams-permissions) caps what they can do.
+Developers who just read MR comments never need a Gecko account. See
+[How identity works in Gecko](/access/identity-model#gitlab-account-linking).
 
 ## What Gecko uses the token for
 
@@ -144,11 +130,6 @@ with a valid token. GitLab.com needs none of this.
 - Read branches, languages, commits, and merge-request details
 - Clone repositories over HTTPS for scan workers
 - Post merge-request comments and open fix merge requests
-
-<Tip>
-  Use a dedicated service account scoped only to the groups and projects Gecko
-  should scan, and rotate the token on a schedule.
-</Tip>
 
 ## Export findings back to GitLab
 
@@ -159,14 +140,42 @@ Gecko can push findings into GitLab's native Security Dashboard. See
 
 <AccordionGroup>
   <Accordion title="Token validation fails">
-    Confirm the token is active, has the `api` scope, and that Gecko's IP addresses
-    can reach your instance. See [Network & IP allowlist](/connect/network-allowlist).
+    Confirm the token is active and has the `api` scope. You can test it
+    yourself:
+
+    ```bash
+    curl --header "PRIVATE-TOKEN: <your-token>" https://gitlab.com/api/v4/user
+    ```
+
+    A `200` with your account JSON means the token is fine; a `401` means it's
+    expired or revoked.
   </Accordion>
-  <Accordion title="Empty repository list or clone failures">
-    Usually an IP restriction. A valid token still can't help if the network
-    blocks Gecko. Allowlist the IP addresses and retry the sync.
+  <Accordion title="Repositories aren't showing up">
+    The token's account isn't a member of the project or group. Add it with
+    the Developer role and re-sync.
   </Accordion>
   <Accordion title="MR comments fail with 403">
     The token is missing the `api` scope. Recreate it with `api` and reconnect.
+  </Accordion>
+</AccordionGroup>
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="What happens when the token expires?">
+    Syncs, scans, and MR comments stop until you paste a fresh token in
+    **Settings** &gt; **GitLab**. Your repository selection, scan history, and
+    findings are unaffected. Rotation is a paste, not a re-setup.
+  </Accordion>
+  <Accordion title="Personal token or group token?">
+    Personal tokens are the fastest way to evaluate Gecko. For production, use
+    a group access token: it isn't tied to a person, so it survives
+    offboarding, and its bot user shows up clearly in audit logs.
+  </Accordion>
+  <Accordion title="Does Gecko store our source code?">
+    Code is cloned for the duration of a scan and not retained. Gecko stores
+    findings with minimal metadata: repository names, usernames/emails, and
+    short (~5–6 line) code snippets. See
+    [Architecture](/deployment/architecture).
   </Accordion>
 </AccordionGroup>

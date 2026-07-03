@@ -22,11 +22,13 @@ This guide follows the current Gecko access flow:
 - Gecko shows the team sign-in URL after the connection is verified.
 - SCIM comes after SSO. It is not the first step.
 
-<Tip>
-  Keep one existing Gecko admin session open until the first Okta login
-  succeeds. Do not switch **SSO enforcement** to required during your first
-  test.
-</Tip>
+<Warning>
+  Keep **SSO enforcement** on **Optional** until a test login succeeds end to
+  end. Enforcement applies to existing sessions too: if you require SSO while
+  your own session came from a password login, you lock yourself out along
+  with everyone else. Sign in through Okta yourself before switching to
+  **Required**.
+</Warning>
 
 ## Connect Okta SAML
 
@@ -84,7 +86,8 @@ This guide follows the current Gecko access flow:
 
   Keep **SSO enforcement** set to **Optional** while you finish testing.
 
-  When sign-in is stable, change **SSO enforcement** to **Required**.
+  When sign-in is stable, sign in through Okta yourself, then change
+  **SSO enforcement** to **Required**.
 </Step>
 </Steps>
 

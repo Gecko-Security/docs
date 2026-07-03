@@ -45,6 +45,7 @@
             "pages": [
               "connect/github",
               "connect/gitlab",
+              "connect/gitlab-self-managed",
               "connect/network-allowlist",
               "connect/webhooks",
               "connect/other-inputs"
@@ -83,6 +84,7 @@
           {
             "group": "Administration",
             "pages": [
+              "access/identity-model",
               "teams-permissions",
               "access/self-managed-sso",
               "access/saml",
@@ -95,7 +97,8 @@
           {
             "group": "Deployment",
             "pages": [
-              "deployment/architecture"
+              "deployment/architecture",
+              "deployment/hybrid"
             ]
           }
         ]

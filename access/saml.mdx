@@ -7,30 +7,31 @@ icon: "id-card"
 
 This is the SAML reference for [Single Sign-On](/access/self-managed-sso): where each
 value goes in your IdP and the per-provider screens for Okta, Microsoft Entra ID, and
-Google Workspace. Set up the connection in the SSO portal first, then use this page to
-enter the values in your IdP.
+Google Workspace. Start the connection from **Settings > Single Sign-On & SCIM**
+first, then use this page to enter the values in your IdP.
 
 <Warning>
-  Take your **ACS URL**, **Entity ID**, and **metadata URL** from the SSO portal
-  (**Settings > Single Sign-On & SCIM**). The Entity ID contains an **auto-generated
-  connection ID** (such as `gecko-okta-72468ca55845447aa90c`). Copy it exactly, and
-  don't build it from your team slug; a mismatch is the top cause of failed logins.
+  Take your **ACS URL**, **Entity ID**, and **metadata URL** from the setup wizard
+  that opens when you click **Connect**. The Entity ID contains a **connection ID
+  derived from your team's internal ID** (such as `gecko-okta-72468ca55845447aa90c`).
+  Copy it exactly, and don't build it from your team slug; a mismatch is the top
+  cause of failed logins.
 </Warning>
 
 ## Service-provider values
 
-These go into your IdP's SAML app. The portal shows the exact strings:
+These go into your IdP's SAML app. The setup wizard shows the exact strings:
 
 | Field | Value |
 | --- | --- |
-| ACS URL (Reply URL) | shown in the SSO portal (`https://auth.gecko.security/login/callback`) |
-| Entity ID (Audience) | shown in the SSO portal (ends in your auto-generated connection ID) |
+| ACS URL (Reply URL) | shown in the setup wizard |
+| Entity ID (Audience) | shown in the setup wizard (ends in your connection ID) |
 | Name ID format | `EmailAddress` |
 | Name ID value | the user's work email |
 
 <Tip>
   Instead of entering these by hand, import Gecko's **SP metadata** into your IdP
-  using the metadata URL from the portal. It carries the ACS URL, Entity ID, and
+  using the metadata URL from the setup wizard. It carries the ACS URL, Entity ID, and
   Gecko's signing certificate in one go, so the values can't drift.
 </Tip>
 
@@ -60,9 +61,9 @@ display-name attribute, so map the two separately.
     2. Name the app (for example, `Gecko`) and click **Continue**.
     3. On **Google Identity Provider details**, copy the **SSO URL** and download the
        **Certificate** (or **Download metadata**). These are the IdP details you enter
-       back in the SSO portal.
+       back in the setup wizard.
     4. On **Service provider details**, paste Gecko's **ACS URL** and **Entity ID**
-       from the SSO portal. Set **Name ID format** to `EMAIL` and **Name ID** to
+       from the setup wizard. Set **Name ID format** to `EMAIL` and **Name ID** to
        **Basic Information > Primary email**.
     5. On **Attribute mapping**, map **First name** and **Last name** to the
        given-name and surname claims above. Google has no single display-name field,
@@ -73,19 +74,20 @@ display-name attribute, so map the two separately.
   </Accordion>
   <Accordion title="Okta">
     In the Okta admin console: **Applications → Create App Integration → SAML 2.0**.
-    Enter Gecko's **ACS URL** and **Entity ID** from the SSO portal, set the
+    Enter Gecko's **ACS URL** and **Entity ID** from the setup wizard, set the
     **Name ID** and attributes, then assign users. The app's **Sign On** tab exposes
-    the **identity provider metadata** URL you enter back in the portal.
+    the **identity provider metadata** URL you enter back in the setup wizard.
   </Accordion>
   <Accordion title="Microsoft Entra ID">
     In the Entra admin center: **Enterprise applications → New application → Create
     your own application** (non-gallery). Under **Single sign-on → SAML**, enter
-    Gecko's **ACS URL** (Reply URL) and **Entity ID** from the SSO portal, configure
+    Gecko's **ACS URL** (Reply URL) and **Entity ID** from the setup wizard, configure
     the claims, then assign users. The **SAML Certificates** section holds the
-    **Federation Metadata XML** you enter back in the portal.
+    **Federation Metadata XML** you enter back in the setup wizard.
   </Accordion>
 </AccordionGroup>
 
-Once the app exists and users are assigned, return to the
-[SSO portal](/access/self-managed-sso) to enter your IdP's sign-in URL and signing
-certificate, verify, and test. That page also covers the common sign-in errors.
+Once the app exists and users are assigned, enter your IdP's sign-in URL and
+signing certificate in the wizard, then verify and test from
+[Settings > Single Sign-On & SCIM](/access/self-managed-sso). That page also
+covers the common sign-in errors.
