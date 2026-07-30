@@ -1,1999 +1,3580 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Gecko SAST Scanner API",
-    "version": "v1",
-    "description": "Use the Gecko API to launch scans and read scan, repository, and vulnerability data for your active team."
+    "title": "Gecko Security API",
+    "version": "1.0.0",
+    "description": "Programmatic access to scans, vulnerabilities, repositories, schedules, webhooks, and scanner image releases. Authenticate with an API key via the `X-API-Key` header or `Authorization: Bearer <key>`."
   },
   "servers": [
     {
-      "url": "https://app.gecko.security",
-      "description": "Production"
+      "url": "https://app.gecko.security/api/v1"
     }
   ],
   "security": [
     {
-      "ApiKeyAuth": []
+      "ApiKeyHeader": []
+    },
+    {
+      "BearerAuth": []
     }
   ],
-  "tags": [
-    {
-      "name": "Scans",
-      "description": "Launch scans and read scan-level data."
-    },
-    {
-      "name": "Repositories",
-      "description": "Read repository inventory and repository vulnerability data."
-    },
-    {
-      "name": "Vulnerabilities",
-      "description": "Read vulnerability data across your active team."
-    },
-    {
-      "name": "Utility",
-      "description": "Service health and utility endpoints."
-    }
-  ],
-  "paths": {
-    "/api/v1/health": {
-      "get": {
-        "tags": [
-          "Utility"
-        ],
-        "summary": "Check API health",
-        "description": "Returns the current API health status and the list of public `v1` endpoints. This endpoint does not require authentication.",
-        "operationId": "getApiV1Health",
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "The API is healthy.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
-                },
-                "example": {
-                  "version": "v1",
-                  "status": "healthy",
-                  "timestamp": "2026-03-10T16:00:00.000Z",
-                  "service": "Gecko SAST Scanner API",
-                  "endpoints": {
-                    "scans": "/api/v1/scans",
-                    "vulnerabilities": "/api/v1/vulnerabilities",
-                    "scanVulnerabilities": "/api/v1/scans/{scanId}/vulnerabilities",
-                    "repositories": "/api/v1/repositories",
-                    "repositoryVulnerabilities": "/api/v1/repositories/{repositoryId}/vulnerabilities",
-                    "scanEndpoints": "/api/v1/scans/{scanId}/endpoints",
-                    "scanWiki": "/api/v1/scans/{scanId}/wiki"
-                  }
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "The API health check failed.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthErrorResponse"
-                },
-                "example": {
-                  "version": "v1",
-                  "status": "unhealthy",
-                  "error": "Service check failed",
-                  "timestamp": "2026-03-10T16:00:00.000Z"
-                }
-              }
-            }
-          }
-        }
+  "components": {
+    "securitySchemes": {
+      "ApiKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
       }
     },
-    "/api/v1/scans": {
-      "get": {
-        "tags": [
-          "Scans"
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "param": {
+                "type": "string"
+              },
+              "doc_url": {
+                "type": "string"
+              },
+              "request_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "code",
+              "message",
+              "doc_url",
+              "request_id"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Scan": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "scan"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_done": {
+            "type": "boolean"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "programming_language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "commit_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "repository": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "vulnerability_counts": {
+            "type": "object",
+            "properties": {
+              "critical": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "high": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "medium": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "low": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "total": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "total"
+            ],
+            "additionalProperties": false
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "name",
+          "status",
+          "is_done",
+          "progress",
+          "programming_language",
+          "branch",
+          "commit_sha",
+          "repository",
+          "vulnerability_counts",
+          "created_at",
+          "ended_at"
         ],
+        "additionalProperties": false
+      },
+      "Vulnerability": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "vulnerability"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "scan_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "repository_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "in_progress",
+              "fixed",
+              "false_positive",
+              "accepted_risk"
+            ]
+          },
+          "severity": {
+            "type": "number"
+          },
+          "severity_level": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "type": {
+            "type": "string"
+          },
+          "cwe": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "short_description": {
+            "type": "string"
+          },
+          "file_path": {
+            "type": "string"
+          },
+          "confidence_score": {
+            "type": "number"
+          },
+          "cvss_vector": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "scan": {
+            "type": "object",
+            "properties": {
+              "object": {
+                "type": "string",
+                "const": "scan"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "name": {
+                "type": "string"
+              },
+              "status": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "is_done": {
+                "type": "boolean"
+              },
+              "progress": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "programming_language": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "branch": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "commit_sha": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "repository": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "vulnerability_counts": {
+                "type": "object",
+                "properties": {
+                  "critical": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "high": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "medium": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "low": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "total": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low",
+                  "total"
+                ],
+                "additionalProperties": false
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "ended_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "object",
+              "id",
+              "name",
+              "status",
+              "is_done",
+              "progress",
+              "programming_language",
+              "branch",
+              "commit_sha",
+              "repository",
+              "vulnerability_counts",
+              "created_at",
+              "ended_at"
+            ],
+            "additionalProperties": false
+          },
+          "repository": {
+            "type": "object",
+            "properties": {
+              "object": {
+                "type": "string",
+                "const": "repository"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "full_name": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "provider": {
+                "type": "string"
+              },
+              "default_branch": {
+                "type": "string"
+              },
+              "web_url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "last_scan_at": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "scan_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "open_vulnerability_counts": {
+                "type": "object",
+                "properties": {
+                  "critical": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "high": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "medium": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "low": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low"
+                ],
+                "additionalProperties": false
+              },
+              "created_at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "object",
+              "id",
+              "full_name",
+              "name",
+              "provider",
+              "default_branch",
+              "web_url",
+              "last_scan_at",
+              "scan_count",
+              "open_vulnerability_counts",
+              "created_at"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "scan_id",
+          "repository_id",
+          "status",
+          "severity",
+          "severity_level",
+          "type",
+          "cwe",
+          "title",
+          "short_description",
+          "file_path",
+          "confidence_score",
+          "cvss_vector",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "Repository": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "repository"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "default_branch": {
+            "type": "string"
+          },
+          "web_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_scan_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scan_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "open_vulnerability_counts": {
+            "type": "object",
+            "properties": {
+              "critical": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "high": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "medium": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "low": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ],
+            "additionalProperties": false
+          },
+          "created_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "full_name",
+          "name",
+          "provider",
+          "default_branch",
+          "web_url",
+          "last_scan_at",
+          "scan_count",
+          "open_vulnerability_counts",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "Schedule": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "schedule"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "repository_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cron_expression": {
+            "type": "string"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scan_mode": {
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "next_run_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_run_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "name",
+          "repository_ids",
+          "branch",
+          "cron_expression",
+          "timezone",
+          "scan_mode",
+          "is_active",
+          "next_run_at",
+          "last_run_at",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "WebhookEndpoint": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "webhook_endpoint"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "url": {
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "event_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "secret": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "url",
+          "description",
+          "enabled",
+          "event_types",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "CreateScanRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "repository": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "github",
+              "gitlab"
+            ]
+          },
+          "branch": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "name",
+          "repository"
+        ],
+        "additionalProperties": false
+      },
+      "TriageVulnerabilityRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "dismiss",
+              "accept_risk",
+              "reopen",
+              "confirm"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateRepositoryRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "fail_on_severity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateScheduleRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "repository_ids": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "cron_expression": {
+            "type": "string",
+            "minLength": 1
+          },
+          "branch": {
+            "type": "string",
+            "minLength": 1
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scan_mode": {
+            "type": "string",
+            "enum": [
+              "full",
+              "diff"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "repository_ids",
+          "cron_expression"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateScheduleRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "repository_ids": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "cron_expression": {
+            "type": "string",
+            "minLength": 1
+          },
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scan_mode": {
+            "type": "string",
+            "enum": [
+              "full",
+              "diff"
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateWebhookRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "event_types": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "scan.started",
+                "scan.completed",
+                "scan.failed",
+                "vulnerability.found",
+                "vulnerability.status_changed",
+                "repository.scan_completed",
+                "schedule.triggered"
+              ]
+            }
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "url",
+          "event_types"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateWebhookRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "event_types": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "scan.started",
+                "scan.completed",
+                "scan.failed",
+                "vulnerability.found",
+                "vulnerability.status_changed",
+                "repository.scan_completed",
+                "schedule.triggered"
+              ]
+            }
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ImageRelease": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "image_release"
+          },
+          "channel": {
+            "type": "string",
+            "description": "Release channel name. Channel names are shared privately by your Gecko account contact and are not listed publicly."
+          },
+          "version": {
+            "type": "string"
+          },
+          "git_sha": {
+            "type": "string"
+          },
+          "image_digest": {
+            "type": "string"
+          },
+          "image_uri": {
+            "type": "string"
+          },
+          "image_ref": {
+            "type": "string"
+          },
+          "pull_command": {
+            "type": "string"
+          },
+          "pushed_at": {
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "channel",
+          "version",
+          "git_sha",
+          "image_digest",
+          "image_uri",
+          "image_ref",
+          "pull_command",
+          "pushed_at",
+          "notes"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "paths": {
+    "/scans": {
+      "get": {
         "summary": "List scans",
-        "description": "Returns scans for the team attached to your API key. This route requires a key whose role includes the `scans.read` permission.",
-        "operationId": "getApiV1Scans",
         "parameters": [
           {
-            "$ref": "#/components/parameters/status"
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 250,
+              "default": 25
+            }
           },
           {
-            "$ref": "#/components/parameters/language"
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           },
           {
-            "$ref": "#/components/parameters/limit"
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           },
           {
-            "$ref": "#/components/parameters/offset"
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repository",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_after",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_before",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "A paginated list of scans.",
-            "headers": {
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/XRateLimitRemaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/XRateLimitReset"
-              }
-            },
+            "description": "A list of scans",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScanListResponse"
-                },
-                "example": {
-                  "version": "v1",
-                  "data": [
-                    {
-                      "id": "f5d35de5-8fc8-4a01-8e28-3bae5d6d26ad",
-                      "name": "Sample Scan",
-                      "status": "completed",
-                      "isDone": true,
-                      "createdAt": "2025-04-22T15:34:53.674Z",
-                      "endAt": "2025-04-22T16:08:22.115Z",
-                      "programmingLanguage": "TypeScript",
-                      "progress": 100,
-                      "vulnerabilityCounts": {
-                        "total": 42,
-                        "critical": 3,
-                        "high": 11,
-                        "medium": 20,
-                        "low": 8
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "const": "list"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Scan"
                       }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ]
                     }
-                  ],
-                  "pagination": {
-                    "total": 123,
-                    "limit": 50,
-                    "offset": 0,
-                    "hasMore": true
                   },
-                  "filters": {
-                    "status": "completed",
-                    "language": "typescript"
-                  }
+                  "required": [
+                    "object",
+                    "data",
+                    "pagination"
+                  ]
                 }
               }
             }
           },
-          "400": {
-            "$ref": "#/components/responses/BadRequestError"
-          },
           "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "description": "The API key is valid, but the key does not include the `scans.read` permission.",
+            "description": "Authentication error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": "API key lacks scans.read permission"
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
           "429": {
-            "$ref": "#/components/responses/RateLimitedError"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
       "post": {
-        "tags": [
-          "Scans"
-        ],
-        "summary": "Launch a scan",
-        "description": "Starts a new scan for a GitLab repository that the team can access. This route requires a key whose role includes the `scans.run` permission, a configured team GitLab integration, and available scan capacity on the current plan. Gecko resolves the target branch in this order: request `branch`, branch in the GitLab URL, then the repository default branch.",
-        "operationId": "postApiV1Scans",
+        "summary": "Trigger a scan (GitHub or GitLab)",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ScanCreateRequest"
-              },
-              "example": {
-                "name": "Paperbaum",
-                "gitlabUrl": "https://gitlab.com/gecko-security/Paperbaum/-/tree/main"
+                "$ref": "#/components/schemas/CreateScanRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "The scan was launched.",
-            "headers": {
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/XRateLimitRemaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/XRateLimitReset"
-              }
-            },
+            "description": "Scan created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScanCreateResponse"
-                },
-                "example": {
-                  "version": "v1",
-                  "data": {
-                    "scanId": "f5d35de5-8fc8-4a01-8e28-3bae5d6d26ad",
-                    "name": "Paperbaum",
-                    "status": "launched",
-                    "repository": {
-                      "fullName": "gecko-security/Paperbaum",
-                      "branch": "main",
-                      "instance": "gitlab.com"
+                  "$ref": "#/components/schemas/Scan"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scans/{id}": {
+      "get": {
+        "summary": "Get a scan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Scan"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scans/{id}/vulnerabilities": {
+      "get": {
+        "summary": "List a scan's vulnerabilities",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 250,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of vulnerabilities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "const": "list"
                     },
-                    "taskArn": "arn:aws:ecs:eu-west-2:123456789012:task/gecko/1234567890abcdef"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The request body or GitLab URL is invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "missingFields": {
-                    "value": {
-                      "error": "'name' and 'gitlabUrl' are required"
-                    }
-                  },
-                  "instanceMismatch": {
-                    "value": {
-                      "error": "GitLab instance mismatch",
-                      "details": "Expected gitlab.com, received self-managed.example.com"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "description": "The API key does not have permission to run scans, the key is not attached to a team, the team GitLab integration is unavailable, or the plan scan limit was reached.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "missingPermission": {
-                    "value": {
-                      "error": "API key lacks scans.run permission"
-                    }
-                  },
-                  "noTeam": {
-                    "value": {
-                      "error": "No active team associated with API key"
-                    }
-                  },
-                  "gitlabMissing": {
-                    "value": {
-                      "error": "GitLab integration not configured for team"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "The team for the API key could not be found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": "Team not found"
-                }
-              }
-            }
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimitedError"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
-          },
-          "502": {
-            "description": "Gecko created the scan record, but the scanner launch failed.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": "Failed to start scan",
-                  "details": "scanner service unavailable"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/scans/{scanId}/vulnerabilities": {
-      "get": {
-        "tags": [
-          "Scans"
-        ],
-        "summary": "List vulnerabilities for a scan",
-        "description": "Returns vulnerabilities for a specific scan in the team attached to your API key.",
-        "operationId": "getApiV1ScansByScanIdVulnerabilities",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/scanId"
-          },
-          {
-            "$ref": "#/components/parameters/severityExact"
-          },
-          {
-            "$ref": "#/components/parameters/type"
-          },
-          {
-            "$ref": "#/components/parameters/cwe"
-          },
-          {
-            "$ref": "#/components/parameters/limit"
-          },
-          {
-            "$ref": "#/components/parameters/offset"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A paginated list of vulnerabilities for the scan.",
-            "headers": {
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/XRateLimitRemaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/XRateLimitReset"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ScanVulnerabilityListResponse"
-                },
-                "example": {
-                  "version": "v1",
-                  "data": [
-                    {
-                      "id": "2a7c9f10-3b1e-4f2d-9a33-1dcf8c7a1d01",
-                      "scanId": "00000000-0000-0000-0000-000000000001",
-                      "severity": 9.4,
-                      "confidenceScore": 8.5,
-                      "title": "Unbounded command template allows shell injection",
-                      "type": "Command Execution",
-                      "cwe": "CWE-78",
-                      "filePath": "services/reports/run_report.ts",
-                      "shortDescription": "User input is interpolated into a shell command without proper quoting.",
-                      "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
-                    }
-                  ],
-                  "pagination": {
-                    "total": 1,
-                    "limit": 100,
-                    "offset": 0,
-                    "hasMore": false
-                  },
-                  "filters": {
-                    "severity": null,
-                    "type": null,
-                    "cwe": null
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The path or query parameters are invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "missingScanId": {
-                    "value": {
-                      "error": "Scan ID is required"
-                    }
-                  },
-                  "badSeverity": {
-                    "value": {
-                      "error": "Severity must be a number between 0 and 10"
-                    }
-                  },
-                  "badLimit": {
-                    "value": {
-                      "error": "Limit cannot exceed 1000"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "description": "The API key is not attached to an active team.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": "No active team associated with API key"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "The scan does not exist or is outside the team scope for the API key.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": "Scan not found"
-                }
-              }
-            }
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimitedError"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
-          }
-        }
-      }
-    },
-    "/api/v1/scans/{scanId}/endpoints": {
-      "get": {
-        "tags": [
-          "Scans"
-        ],
-        "summary": "Get scan endpoint definitions",
-        "description": "Returns the scan endpoint definition that Gecko stored for the scan. Gecko returns the raw value and a parsed object when the stored format is JSON.",
-        "operationId": "getApiV1ScansByScanIdEndpoints",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/scanId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The scan endpoint definition.",
-            "headers": {
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/XRateLimitRemaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/XRateLimitReset"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ScanEndpointsResponse"
-                },
-                "examples": {
-                  "yaml": {
-                    "value": {
-                      "version": "v1",
-                      "scan_id": "f5d35de5-8fc8-4a01-8e28-3bae5d6d26ad",
-                      "format": "yaml",
-                      "endpoints": "openapi: 3.1.0\ninfo:\n  title: Example API\npaths:\n  /health:\n    get:\n      summary: Health",
-                      "parsed": null
-                    }
-                  },
-                  "json": {
-                    "value": {
-                      "version": "v1",
-                      "scan_id": "f5d35de5-8fc8-4a01-8e28-3bae5d6d26ad",
-                      "format": "json",
-                      "endpoints": "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"Example API\"}}",
-                      "parsed": {
-                        "openapi": "3.1.0",
-                        "info": {
-                          "title": "Example API"
-                        }
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Vulnerability"
                       }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ]
                     }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The scan ID is missing.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": "Scan ID is required"
+                  },
+                  "required": [
+                    "object",
+                    "data",
+                    "pagination"
+                  ]
                 }
               }
             }
           },
           "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "description": "The API key is not attached to an active team.",
+            "description": "Authentication error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": "No active team associated with API key"
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
           "404": {
-            "description": "The scan does not exist or is outside the team scope for the API key.",
+            "description": "Not found",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": "Scan not found"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
           "429": {
-            "$ref": "#/components/responses/RateLimitedError"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/api/v1/scans/{scanId}/wiki": {
+    "/scans/{id}/endpoints": {
       "get": {
-        "tags": [
-          "Scans"
-        ],
-        "summary": "Get scan wiki markdown",
-        "description": "Returns the generated scan summary as Markdown. Gecko uses the stored summary string directly when it is already Markdown and builds Markdown from the structured summary payload otherwise.",
-        "operationId": "getApiV1ScansByScanIdWiki",
+        "summary": "Get the API spec discovered by a scan",
         "parameters": [
           {
-            "$ref": "#/components/parameters/scanId"
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "The scan wiki in Markdown format.",
-            "headers": {
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/XRateLimitRemaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/XRateLimitReset"
-              }
-            },
-            "content": {
-              "text/markdown": {
-                "schema": {
-                  "type": "string"
-                },
-                "example": "# Threat model summary\n\nThis scan covers the checkout service.\n\n---\n\n## Authentication\n\nThe service uses bearer tokens."
-              }
-            }
+            "description": "Endpoints"
           },
-          "400": {
-            "description": "The scan ID is missing.",
+          "401": {
+            "description": "Authentication error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": "Scan ID is required"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
           "403": {
-            "description": "The API key is not attached to an active team.",
+            "description": "Authorization error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "error": "No active team associated with API key"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
           "404": {
-            "description": "The scan does not exist, is outside the team scope for the API key, or no summary is available for the scan.",
+            "description": "Not found",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "scanMissing": {
-                    "value": {
-                      "error": "Scan not found"
-                    }
-                  },
-                  "summaryMissing": {
-                    "value": {
-                      "error": "No summary available for this scan"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
           "429": {
-            "$ref": "#/components/responses/RateLimitedError"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/api/v1/repositories": {
+    "/scans/{id}/wiki": {
       "get": {
-        "tags": [
-          "Repositories"
+        "summary": "Get a scan's wiki (markdown)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
+        "responses": {
+          "200": {
+            "description": "Markdown wiki",
+            "content": {
+              "text/markdown": {}
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vulnerabilities": {
+      "get": {
+        "summary": "List vulnerabilities",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 250,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cwe",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repository",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scan_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "created_after",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "created_before",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of vulnerabilities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "const": "list"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Vulnerability"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "object",
+                    "data",
+                    "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vulnerabilities/{id}": {
+      "get": {
+        "summary": "Get a vulnerability",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vulnerability"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Triage a vulnerability",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriageVulnerabilityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vulnerability"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/repositories": {
+      "get": {
         "summary": "List repositories",
-        "description": "Returns repositories for the team attached to your API key.",
-        "operationId": "getApiV1Repositories",
         "parameters": [
           {
-            "$ref": "#/components/parameters/name"
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 250,
+              "default": 25
+            }
           },
           {
-            "$ref": "#/components/parameters/limit"
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           },
           {
-            "$ref": "#/components/parameters/offset"
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "A paginated list of repositories.",
-            "headers": {
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/XRateLimitRemaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/XRateLimitReset"
-              }
-            },
+            "description": "A list of repositories",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RepositoryListResponse"
-                },
-                "example": {
-                  "version": "v1",
-                  "data": [
-                    {
-                      "id": "4dfd6898-69f0-4dff-9cff-8cd75f7ad28a",
-                      "name": "gecko-security/Paperbaum",
-                      "fullName": "gecko-security/Paperbaum",
-                      "clonePath": "https://github.com/gecko-security/Paperbaum.git",
-                      "lastScanAt": "2025-08-04T09:01:20.000Z",
-                      "scanCount": 8,
-                      "vulnerabilityCount": 37
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "const": "list"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Repository"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ]
                     }
-                  ],
-                  "pagination": {
-                    "total": 1,
-                    "limit": 50,
-                    "offset": 0,
-                    "hasMore": false
                   },
-                  "filters": {
-                    "name": null
-                  }
+                  "required": [
+                    "object",
+                    "data",
+                    "pagination"
+                  ]
                 }
               }
             }
           },
-          "400": {
-            "$ref": "#/components/responses/BadRequestError"
-          },
           "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "429": {
-            "$ref": "#/components/responses/RateLimitedError"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/api/v1/repositories/{repositoryId}/vulnerabilities": {
+    "/repositories/{owner}/{repo}": {
       "get": {
-        "tags": [
-          "Repositories"
-        ],
-        "summary": "List vulnerabilities for a repository",
-        "description": "Returns vulnerabilities for the repository path in `repositoryId`. URL-encode the repository path before you send it. For example, use `gecko-security%2FPaperbaum` for `gecko-security/Paperbaum`.",
-        "operationId": "getApiV1RepositoriesByRepositoryIdVulnerabilities",
+        "summary": "Get a repository",
         "parameters": [
           {
-            "$ref": "#/components/parameters/repositoryId"
+            "name": "owner",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
-            "$ref": "#/components/parameters/severityMinimum"
-          },
-          {
-            "$ref": "#/components/parameters/type"
-          },
-          {
-            "$ref": "#/components/parameters/cwe"
-          },
-          {
-            "$ref": "#/components/parameters/days"
-          },
-          {
-            "$ref": "#/components/parameters/limit"
-          },
-          {
-            "$ref": "#/components/parameters/offset"
+            "name": "repo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "A paginated list of vulnerabilities for the repository.",
-            "headers": {
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/XRateLimitRemaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/XRateLimitReset"
-              }
-            },
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RepositoryVulnerabilityListResponse"
-                },
-                "example": {
-                  "version": "v1",
-                  "repository": "gecko-security/Paperbaum",
-                  "data": [
-                    {
-                      "id": "3b8d0e21-4c2f-5e3d-0b44-2edf9d8b2e12",
-                      "scanId": "11111111-1111-1111-1111-111111111111",
-                      "scanName": "Weekly Security Scan",
-                      "scanCreatedAt": "2025-08-02T08:00:00.000Z",
-                      "severity": 7.5,
-                      "confidenceScore": 9.0,
-                      "title": "Path Traversal in File Download",
-                      "type": "LFI",
-                      "cwe": "CWE-22",
-                      "filePath": "api/files/download.py",
-                      "shortDescription": "User-controlled path allows reading arbitrary files.",
-                      "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N"
-                    }
-                  ],
-                  "pagination": {
-                    "total": 5,
-                    "limit": 100,
-                    "offset": 0,
-                    "hasMore": false
-                  },
-                  "filters": {
-                    "severity": null,
-                    "type": null,
-                    "cwe": null,
-                    "days": 7
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The path or query parameters are invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "missingRepositoryId": {
-                    "value": {
-                      "error": "Repository ID is required"
-                    }
-                  },
-                  "badSeverity": {
-                    "value": {
-                      "error": "Severity must be a number between 0 and 10"
-                    }
-                  },
-                  "badDays": {
-                    "value": {
-                      "error": "Days must be a positive integer"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Repository"
                 }
               }
             }
           },
           "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "429": {
-            "$ref": "#/components/responses/RateLimitedError"
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update repository settings",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
+          {
+            "name": "repo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRepositoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Repository"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/api/v1/vulnerabilities": {
+    "/repositories/{owner}/{repo}/vulnerabilities": {
       "get": {
-        "tags": [
-          "Vulnerabilities"
-        ],
-        "summary": "List vulnerabilities across the active team",
-        "description": "Returns vulnerabilities across all scans that belong to the team attached to your API key.",
-        "operationId": "getApiV1Vulnerabilities",
+        "summary": "List a repository's vulnerabilities",
         "parameters": [
           {
-            "$ref": "#/components/parameters/severityMinimum"
+            "name": "owner",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
-            "$ref": "#/components/parameters/type"
+            "name": "repo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
           {
-            "$ref": "#/components/parameters/cwe"
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 250,
+              "default": 25
+            }
           },
           {
-            "$ref": "#/components/parameters/scanIdFilter"
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           },
           {
-            "$ref": "#/components/parameters/days"
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           },
           {
-            "$ref": "#/components/parameters/limit"
-          },
-          {
-            "$ref": "#/components/parameters/offset"
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "A paginated list of vulnerabilities across the active team.",
-            "headers": {
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/XRateLimitRemaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/XRateLimitReset"
-              }
-            },
+            "description": "A list of vulnerabilities",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/VulnerabilityListResponse"
-                },
-                "example": {
-                  "version": "v1",
-                  "data": [
-                    {
-                      "id": "2a7c9f10-3b1e-4f2d-9a33-1dcf8c7a1d01",
-                      "scanId": "00000000-0000-0000-0000-000000000001",
-                      "scanName": "My Repository Scan",
-                      "scanCreatedAt": "2025-08-01T10:00:00.000Z",
-                      "severity": 9.4,
-                      "confidenceScore": 8.5,
-                      "title": "SQL Injection in User Search",
-                      "type": "SQLI",
-                      "cwe": "CWE-89",
-                      "filePath": "api/users/search.py",
-                      "shortDescription": "User input directly concatenated into SQL query.",
-                      "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
-                    }
-                  ],
-                  "pagination": {
-                    "total": 42,
-                    "limit": 100,
-                    "offset": 0,
-                    "hasMore": false
-                  },
-                  "filters": {
-                    "severity": null,
-                    "type": null,
-                    "cwe": null,
-                    "scan_id": null,
-                    "days": 14
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The query parameters are invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "badSeverity": {
-                    "value": {
-                      "error": "Severity must be a number between 0 and 10"
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "const": "list"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Vulnerability"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ]
                     }
                   },
-                  "badDays": {
-                    "value": {
-                      "error": "Days must be a positive integer"
-                    }
-                  },
-                  "badLimit": {
-                    "value": {
-                      "error": "Limit cannot exceed 1000"
-                    }
-                  }
+                  "required": [
+                    "object",
+                    "data",
+                    "pagination"
+                  ]
                 }
               }
             }
           },
           "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "429": {
-            "$ref": "#/components/responses/RateLimitedError"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "securitySchemes": {
-      "ApiKeyAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "X-API-Key",
-        "description": "Team-scoped Gecko API key. Keys start with `gk_`."
-      }
-    },
-    "headers": {
-      "XRateLimitRemaining": {
-        "description": "Requests remaining in the current one-hour window for the API key.",
-        "schema": {
-          "type": "integer"
-        }
-      },
-      "XRateLimitReset": {
-        "description": "ISO 8601 timestamp for when the current one-hour rate-limit window resets.",
-        "schema": {
-          "type": "string",
-          "format": "date-time"
-        }
-      },
-      "RetryAfter": {
-        "description": "Seconds to wait before retrying the request.",
-        "schema": {
-          "type": "integer"
-        }
-      }
-    },
-    "parameters": {
-      "scanId": {
-        "name": "scanId",
-        "in": "path",
-        "required": true,
-        "description": "Scan UUID.",
-        "schema": {
-          "type": "string",
-          "format": "uuid"
-        }
-      },
-      "repositoryId": {
-        "name": "repositoryId",
-        "in": "path",
-        "required": true,
-        "description": "URL-encoded repository path, for example `gecko-security%2FPaperbaum` or `gitlab:group%2Fproject`.",
-        "schema": {
-          "type": "string"
-        }
-      },
-      "status": {
-        "name": "status",
-        "in": "query",
-        "required": false,
-        "description": "Filter scans by status.",
-        "schema": {
-          "type": "string"
-        },
-        "example": "completed"
-      },
-      "language": {
-        "name": "language",
-        "in": "query",
-        "required": false,
-        "description": "Filter scans by programming language.",
-        "schema": {
-          "type": "string"
-        },
-        "example": "typescript"
-      },
-      "name": {
-        "name": "name",
-        "in": "query",
-        "required": false,
-        "description": "Filter repositories by repository name or full name.",
-        "schema": {
-          "type": "string"
-        },
-        "example": "paperbaum"
-      },
-      "severityMinimum": {
-        "name": "severity",
-        "in": "query",
-        "required": false,
-        "description": "Filter to vulnerabilities with a severity greater than or equal to this value.",
-        "schema": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 10
-        },
-        "example": 9
-      },
-      "severityExact": {
-        "name": "severity",
-        "in": "query",
-        "required": false,
-        "description": "Filter to vulnerabilities whose severity matches this value exactly.",
-        "schema": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 10
-        },
-        "example": 9.4
-      },
-      "type": {
-        "name": "type",
-        "in": "query",
-        "required": false,
-        "description": "Filter vulnerabilities by type. Gecko performs a case-insensitive substring match.",
-        "schema": {
-          "type": "string"
-        },
-        "example": "sqli"
-      },
-      "cwe": {
-        "name": "cwe",
-        "in": "query",
-        "required": false,
-        "description": "Filter vulnerabilities by CWE. Gecko performs a case-insensitive substring match.",
-        "schema": {
-          "type": "string"
-        },
-        "example": "CWE-89"
-      },
-      "scanIdFilter": {
-        "name": "scan_id",
-        "in": "query",
-        "required": false,
-        "description": "Filter cross-scan vulnerability results to a single scan UUID.",
-        "schema": {
-          "type": "string",
-          "format": "uuid"
-        }
-      },
-      "days": {
-        "name": "days",
-        "in": "query",
-        "required": false,
-        "description": "Filter results to scans created within the last `N` days.",
-        "schema": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "example": 14
-      },
-      "limit": {
-        "name": "limit",
-        "in": "query",
-        "required": false,
-        "description": "Maximum number of results to return. Gecko defaults to `100` and caps the value at `1000`.",
-        "schema": {
-          "type": "integer",
-          "default": 100,
-          "minimum": 1,
-          "maximum": 1000
-        },
-        "example": 50
-      },
-      "offset": {
-        "name": "offset",
-        "in": "query",
-        "required": false,
-        "description": "Number of results to skip before Gecko starts returning rows.",
-        "schema": {
-          "type": "integer",
-          "default": 0,
-          "minimum": 0
-        },
-        "example": 0
-      }
-    },
-    "responses": {
-      "BadRequestError": {
-        "description": "The request parameters are invalid.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "error": "Limit cannot exceed 1000"
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
             }
           }
         }
-      },
-      "UnauthorizedError": {
-        "description": "The API key is missing, malformed, or invalid.",
-        "content": {
-          "application/json": {
+      }
+    },
+    "/repositories/{owner}/{repo}/scans": {
+      "get": {
+        "summary": "List a repository's scans",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "examples": {
-              "missingKey": {
-                "value": {
-                  "error": "API key is required"
+              "type": "string"
+            }
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 250,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of scans",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "const": "list"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Scan"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "object",
+                    "data",
+                    "pagination"
+                  ]
                 }
-              },
-              "badFormat": {
-                "value": {
-                  "error": "Invalid API key format"
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
-              },
-              "badKey": {
-                "value": {
-                  "error": "Invalid API key"
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedules": {
+      "get": {
+        "summary": "List schedules",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 250,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of schedules",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "const": "list"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Schedule"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "object",
+                    "data",
+                    "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           }
         }
       },
-      "RateLimitedError": {
-        "description": "The API key reached the per-hour request limit.",
-        "headers": {
-          "Retry-After": {
-            "$ref": "#/components/headers/RetryAfter"
-          }
-        },
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "error": "Rate limit exceeded"
+      "post": {
+        "summary": "Create a schedule",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateScheduleRequest"
+              }
             }
           }
-        }
-      },
-      "InternalServerError": {
-        "description": "Gecko failed to process the request.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "error": "Internal server error"
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Schedule"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
             }
           }
         }
       }
     },
-    "schemas": {
-      "ErrorResponse": {
-        "type": "object",
-        "required": [
-          "error"
-        ],
-        "properties": {
-          "error": {
-            "type": "string"
-          },
-          "details": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "hint": {
-            "type": [
-              "string",
-              "null"
-            ]
+    "/schedules/{id}": {
+      "get": {
+        "summary": "Get a schedule",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
-        }
-      },
-      "HealthErrorResponse": {
-        "type": "object",
-        "required": [
-          "version",
-          "status",
-          "error",
-          "timestamp"
         ],
-        "properties": {
-          "version": {
-            "type": "string",
-            "const": "v1"
-          },
-          "status": {
-            "type": "string",
-            "const": "unhealthy"
-          },
-          "error": {
-            "type": "string"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "Pagination": {
-        "type": "object",
-        "required": [
-          "total",
-          "limit",
-          "offset",
-          "hasMore"
-        ],
-        "properties": {
-          "total": {
-            "type": "integer"
-          },
-          "limit": {
-            "type": "integer"
-          },
-          "offset": {
-            "type": "integer"
-          },
-          "hasMore": {
-            "type": "boolean"
-          }
-        }
-      },
-      "ScanVulnerabilityCounts": {
-        "type": "object",
-        "required": [
-          "total",
-          "critical",
-          "high",
-          "medium",
-          "low"
-        ],
-        "properties": {
-          "total": {
-            "type": "integer"
-          },
-          "critical": {
-            "type": "integer"
-          },
-          "high": {
-            "type": "integer"
-          },
-          "medium": {
-            "type": "integer"
-          },
-          "low": {
-            "type": "integer"
-          }
-        }
-      },
-      "ScanSummary": {
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "status",
-          "isDone",
-          "createdAt",
-          "endAt",
-          "programmingLanguage",
-          "progress",
-          "vulnerabilityCounts"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "status": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "isDone": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "endAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "programmingLanguage": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "progress": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "minimum": 0,
-            "maximum": 100
-          },
-          "vulnerabilityCounts": {
-            "$ref": "#/components/schemas/ScanVulnerabilityCounts"
-          }
-        }
-      },
-      "ScanCreateRequest": {
-        "type": "object",
-        "required": [
-          "name",
-          "gitlabUrl"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Readable scan name."
-          },
-          "gitlabUrl": {
-            "type": "string",
-            "format": "uri",
-            "description": "GitLab repository URL. You can include a branch in `?ref=` or in a `/-/tree/<branch>` path."
-          },
-          "branch": {
-            "type": "string",
-            "description": "Optional branch override."
-          }
-        }
-      },
-      "ScanCreateResponse": {
-        "type": "object",
-        "required": [
-          "version",
-          "data"
-        ],
-        "properties": {
-          "version": {
-            "type": "string",
-            "const": "v1"
-          },
-          "data": {
-            "type": "object",
-            "required": [
-              "scanId",
-              "name",
-              "status",
-              "repository",
-              "taskArn"
-            ],
-            "properties": {
-              "scanId": {
-                "type": "string",
-                "format": "uuid"
-              },
-              "name": {
-                "type": "string"
-              },
-              "status": {
-                "type": "string",
-                "const": "launched"
-              },
-              "repository": {
-                "type": "object",
-                "required": [
-                  "fullName",
-                  "branch",
-                  "instance"
-                ],
-                "properties": {
-                  "fullName": {
-                    "type": "string"
-                  },
-                  "branch": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "instance": {
-                    "type": "string"
-                  }
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Schedule"
                 }
-              },
-              "taskArn": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
         }
       },
-      "RepositorySummary": {
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "fullName",
-          "clonePath",
-          "lastScanAt",
-          "scanCount",
-          "vulnerabilityCount"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "fullName": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "clonePath": {
-            "type": "string"
-          },
-          "lastScanAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "scanCount": {
-            "type": "integer"
-          },
-          "vulnerabilityCount": {
-            "type": "integer"
-          }
-        }
-      },
-      "VulnerabilitySummary": {
-        "type": "object",
-        "required": [
-          "id",
-          "scanId",
-          "severity",
-          "title",
-          "type",
-          "cwe",
-          "filePath",
-          "shortDescription"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "scanId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "scanName": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "scanCreatedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "severity": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 10
-          },
-          "confidenceScore": {
-            "type": [
-              "number",
-              "null"
-            ],
-            "minimum": 0,
-            "maximum": 10
-          },
-          "title": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "cwe": {
-            "type": "string"
-          },
-          "filePath": {
-            "type": "string"
-          },
-          "shortDescription": {
-            "type": "string"
-          },
-          "cvssVector": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "createdAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          }
-        }
-      },
-      "ScanArtifactFilters": {
-        "type": "object",
-        "required": [
-          "severity",
-          "type",
-          "cwe"
-        ],
-        "properties": {
-          "severity": {
-            "type": [
-              "number",
-              "null"
-            ]
-          },
-          "type": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "cwe": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        }
-      },
-      "TeamVulnerabilityFilters": {
-        "type": "object",
-        "required": [
-          "severity",
-          "type",
-          "cwe",
-          "scan_id",
-          "days"
-        ],
-        "properties": {
-          "severity": {
-            "type": [
-              "number",
-              "null"
-            ]
-          },
-          "type": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "cwe": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "scan_id": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "uuid"
-          },
-          "days": {
-            "type": [
-              "integer",
-              "null"
-            ]
-          }
-        }
-      },
-      "RepositoryVulnerabilityFilters": {
-        "type": "object",
-        "required": [
-          "severity",
-          "type",
-          "cwe",
-          "days"
-        ],
-        "properties": {
-          "severity": {
-            "type": [
-              "number",
-              "null"
-            ]
-          },
-          "type": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "cwe": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "days": {
-            "type": [
-              "integer",
-              "null"
-            ]
-          }
-        }
-      },
-      "ScanListFilters": {
-        "type": "object",
-        "required": [
-          "status",
-          "language"
-        ],
-        "properties": {
-          "status": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "language": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        }
-      },
-      "RepositoryListFilters": {
-        "type": "object",
-        "required": [
-          "name"
-        ],
-        "properties": {
-          "name": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        }
-      },
-      "ScanListResponse": {
-        "type": "object",
-        "required": [
-          "version",
-          "data",
-          "pagination",
-          "filters"
-        ],
-        "properties": {
-          "version": {
-            "type": "string",
-            "const": "v1"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ScanSummary"
-            }
-          },
-          "pagination": {
-            "$ref": "#/components/schemas/Pagination"
-          },
-          "filters": {
-            "$ref": "#/components/schemas/ScanListFilters"
-          }
-        }
-      },
-      "RepositoryListResponse": {
-        "type": "object",
-        "required": [
-          "version",
-          "data",
-          "pagination",
-          "filters"
-        ],
-        "properties": {
-          "version": {
-            "type": "string",
-            "const": "v1"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/RepositorySummary"
-            }
-          },
-          "pagination": {
-            "$ref": "#/components/schemas/Pagination"
-          },
-          "filters": {
-            "$ref": "#/components/schemas/RepositoryListFilters"
-          }
-        }
-      },
-      "VulnerabilityListResponse": {
-        "type": "object",
-        "required": [
-          "version",
-          "data",
-          "pagination",
-          "filters"
-        ],
-        "properties": {
-          "version": {
-            "type": "string",
-            "const": "v1"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/VulnerabilitySummary"
-            }
-          },
-          "pagination": {
-            "$ref": "#/components/schemas/Pagination"
-          },
-          "filters": {
-            "$ref": "#/components/schemas/TeamVulnerabilityFilters"
-          }
-        }
-      },
-      "RepositoryVulnerabilityListResponse": {
-        "type": "object",
-        "required": [
-          "version",
-          "repository",
-          "data",
-          "pagination",
-          "filters"
-        ],
-        "properties": {
-          "version": {
-            "type": "string",
-            "const": "v1"
-          },
-          "repository": {
-            "type": "string"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/VulnerabilitySummary"
-            }
-          },
-          "pagination": {
-            "$ref": "#/components/schemas/Pagination"
-          },
-          "filters": {
-            "$ref": "#/components/schemas/RepositoryVulnerabilityFilters"
-          }
-        }
-      },
-      "ScanVulnerability": {
-        "allOf": [
+      "patch": {
+        "summary": "Update a schedule",
+        "parameters": [
           {
-            "$ref": "#/components/schemas/VulnerabilitySummary"
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScheduleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Schedule"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a schedule",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/releases/{channel}": {
+      "get": {
+        "summary": "List image releases for a channel",
+        "description": "Newest-first history of published scanner images. Pin pulls to the returned digest-pinned `image_ref`, never a mutable tag. Unknown channel names return `not_found`.",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Release channel name. Channel names are shared privately by your Gecko account contact and are not listed publicly."
+            }
           },
           {
-            "type": "object",
-            "additionalProperties": true
-          }
-        ]
-      },
-      "ScanVulnerabilityListResponse": {
-        "type": "object",
-        "required": [
-          "version",
-          "data",
-          "pagination",
-          "filters"
-        ],
-        "properties": {
-          "version": {
-            "type": "string",
-            "const": "v1"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ScanVulnerability"
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 250,
+              "default": 25
             }
           },
-          "pagination": {
-            "$ref": "#/components/schemas/Pagination"
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           },
-          "filters": {
-            "$ref": "#/components/schemas/ScanArtifactFilters"
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of image releases",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "const": "list"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ImageRelease"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "object",
+                    "data",
+                    "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/releases/{channel}/latest": {
+      "get": {
+        "summary": "Get the latest image release for a channel",
+        "description": "Unknown channel names return `not_found`.",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Release channel name. Channel names are shared privately by your Gecko account contact and are not listed publicly."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageRelease"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks": {
+      "get": {
+        "summary": "List webhook endpoints",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 250,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of webhook endpoints",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "const": "list"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WebhookEndpoint"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "object",
+                    "data",
+                    "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
-      "ScanEndpointsResponse": {
-        "type": "object",
-        "required": [
-          "version",
-          "scan_id",
-          "format",
-          "endpoints",
-          "parsed"
+      "post": {
+        "summary": "Create a webhook endpoint",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWebhookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpoint"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/{id}": {
+      "get": {
+        "summary": "Get a webhook endpoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "properties": {
-          "version": {
-            "type": "string",
-            "const": "v1"
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpoint"
+                }
+              }
+            }
           },
-          "scan_id": {
-            "type": "string",
-            "format": "uuid"
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
-          "format": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "enum": [
-              "yaml",
-              "json",
-              null
-            ]
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
-          "endpoints": {
-            "type": [
-              "string",
-              "null"
-            ]
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
-          "parsed": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": true
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
-      "HealthResponse": {
-        "type": "object",
-        "required": [
-          "version",
-          "status",
-          "timestamp",
-          "service",
-          "endpoints"
+      "patch": {
+        "summary": "Update a webhook endpoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "properties": {
-          "version": {
-            "type": "string",
-            "const": "v1"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWebhookRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpoint"
+                }
+              }
+            }
           },
-          "status": {
-            "type": "string",
-            "const": "healthy"
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time"
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
-          "service": {
-            "type": "string"
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
-          "endpoints": {
-            "type": "object",
-            "required": [
-              "scans",
-              "vulnerabilities",
-              "scanVulnerabilities",
-              "repositories",
-              "repositoryVulnerabilities",
-              "scanEndpoints",
-              "scanWiki"
-            ],
-            "properties": {
-              "scans": {
-                "type": "string"
-              },
-              "vulnerabilities": {
-                "type": "string"
-              },
-              "scanVulnerabilities": {
-                "type": "string"
-              },
-              "repositories": {
-                "type": "string"
-              },
-              "repositoryVulnerabilities": {
-                "type": "string"
-              },
-              "scanEndpoints": {
-                "type": "string"
-              },
-              "scanWiki": {
-                "type": "string"
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a webhook endpoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }

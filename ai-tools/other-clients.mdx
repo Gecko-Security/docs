@@ -1,0 +1,78 @@
+---
+title: "Cursor, Devin & other MCP clients"
+sidebarTitle: "Other clients"
+icon: "plug"
+description: "Connect Gecko to Cursor, Devin Desktop, or any MCP client that supports Streamable HTTP."
+---
+
+Gecko's MCP server works with any client that supports Streamable HTTP. Use
+OAuth where the client supports it; otherwise create an API key under
+**Settings** > **API Keys** and send it as a bearer header.
+
+## Cursor
+
+Install with one click:
+
+[**Add to Cursor**](https://cursor.com/install-mcp?name=gecko&config=eyJ1cmwiOiJodHRwczovL2FwcC5nZWNrby5zZWN1cml0eS9hcGkvbWNwIn0=)
+
+Cursor runs the OAuth flow when no header is configured; approve Gecko's
+authorization screen and you're connected. To use an API key instead, add the
+`headers` block from the generic config below to `.cursor/mcp.json`.
+
+## Devin Desktop (formerly Windsurf)
+
+Add the server to `mcp_config.json` with an API key:
+
+```json
+{
+  "mcpServers": {
+    "gecko": {
+      "type": "http",
+      "url": "https://app.gecko.security/api/mcp",
+      "headers": { "Authorization": "Bearer ${GECKO_API_KEY}" }
+    }
+  }
+}
+```
+
+## Any other MCP client
+
+Point the client at `https://app.gecko.security/api/mcp` using the same
+`mcpServers` config shape as above. If the client supports OAuth, omit the
+`headers` block and it will discover Gecko's authorization server and open
+the consent screen automatically.
+
+## Smoke test
+
+Verify connectivity from any machine:
+
+```bash
+curl -s https://app.gecko.security/api/mcp \
+  -H "Authorization: Bearer $GECKO_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"server/discover","params":{}}'
+```
+
+A `result.supportedVersions` array in the response means you're connected.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="The client can't connect at all">
+    Run the smoke test above. If it succeeds, the endpoint, network, and
+    credential are fine and the problem is the client's configuration:
+    confirm the type is `http` (Streamable HTTP, not `sse`; the server is
+    stateless and returns `405` to `GET`).
+  </Accordion>
+  <Accordion title="OAuth never starts">
+    Not every client implements MCP OAuth discovery. If yours doesn't, fall
+    back to an API key with the `headers` block above.
+  </Accordion>
+  <Accordion title="Connected, but tools return permission errors">
+    Access is always capped by the credential owner's live Gecko role; see
+    [how access is scoped](/ai-tools/overview#how-access-is-scoped).
+  </Accordion>
+</AccordionGroup>
+
+See the [overview](/ai-tools/overview) for available tools and how access is
+scoped.

@@ -1,42 +1,45 @@
 ---
 title: "API reference"
-description: "Authenticate with a Gecko API key, understand team scope and rate limits, and start using the v1 API."
+description: "Authenticate to the Gecko v1 API, understand the response envelope, pagination, idempotency, and tier-aware rate limits."
 ---
 
 <Info>
-  Gecko's `v1` API lets you launch scans and read scan, repository, and
-  vulnerability data for the team attached to your API key.
+  Gecko's `v1` API lets you trigger scans, read scan, repository, and
+  vulnerability data, triage findings, manage scan schedules, and receive
+  [webhook events](/api-reference/webhooks), all scoped to the team attached
+  to your API key.
 </Info>
 
-## Before you call the API
+The API is self-describing. These surfaces are always in sync with the
+running service:
 
-<Steps>
-<Step title="Create an API key">
-  Open **API Keys** in Gecko.
+| Surface | URL |
+| --- | --- |
+| OpenAPI 3.1 spec | `https://app.gecko.security/api/v1/openapi.json` |
+| Interactive docs | `https://app.gecko.security/api/v1/docs` |
+| Machine-readable changelog | `https://app.gecko.security/api/v1/changelog` |
+| Health check (public) | `https://app.gecko.security/api/v1/health` |
 
-  Create a key for the team you want to query.
+## Authentication
 
-  Copy the full value when Gecko shows it. Gecko only shows the complete key at
-  creation time.
-</Step>
-<Step title="Send the key in the request header">
-  Add `X-API-Key: YOUR_API_KEY` to every authenticated request.
+Create a key under **Settings** > **API Keys** ([details](/admin/api-keys)).
+Keys start with `gk_` and are shown in full only once, at creation.
 
-  Gecko API keys start with `gk_`.
-</Step>
-<Step title="Call the endpoint you need">
-  Use the generated endpoint pages in this section for request and response
-  details.
-</Step>
-</Steps>
+Send the key either way; both are equivalent:
+
+- `Authorization: Bearer gk_…`
+- `X-API-Key: gk_…`
+
+Every response is scoped to the team the key belongs to, and every request is
+checked against the key owner's current role permissions (for example
+`scans.read` to list scans, `scans.run` to trigger one).
 
 ## Send your first request
 
 <CodeGroup>
 ```bash cURL
-curl https://app.gecko.security/api/v1/scans?limit=10 \
-  -H "X-API-Key: $GECKO_API_KEY" \
-  -H "Accept: application/json"
+curl "https://app.gecko.security/api/v1/scans?limit=10" \
+  -H "Authorization: Bearer $GECKO_API_KEY"
 ```
 
 ```python Python
@@ -45,7 +48,7 @@ import requests
 res = requests.get(
     "https://app.gecko.security/api/v1/scans",
     params={"limit": 10},
-    headers={"X-API-Key": "YOUR_API_KEY"},
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
 )
 res.raise_for_status()
 print(res.json())
@@ -54,54 +57,125 @@ print(res.json())
 ```javascript JavaScript
 const res = await fetch(
   "https://app.gecko.security/api/v1/scans?limit=10",
-  { headers: { "X-API-Key": process.env.GECKO_API_KEY, Accept: "application/json" } },
+  { headers: { Authorization: `Bearer ${process.env.GECKO_API_KEY}` } },
 );
 const data = await res.json();
 console.log(data);
 ```
 </CodeGroup>
 
-## How access works
+## Response envelope
 
-- `GET /api/v1/health` is public.
-- All other `v1` endpoints require `X-API-Key`.
-- Gecko scopes every response to the team attached to your API key.
-- `GET /api/v1/scans` requires a key with `scans.read`.
-- `POST /api/v1/scans` requires a key with `scans.run`.
-- Scan creation also requires a configured GitLab integration for that team.
+Every response has one of three shapes. Single resources carry an `object`
+type discriminator:
 
-<Tip>
-  Use the repository path as the `repositoryId` for repository vulnerability
-  requests, and URL-encode it first. For example, send
-  `gecko-security%2FPaperbaum` for `gecko-security/Paperbaum`.
-</Tip>
+```json
+{ "object": "scan", "id": "…", "status": "completed", "…": "…" }
+```
+
+Lists wrap their items and carry cursor pagination:
+
+```json
+{
+  "object": "list",
+  "data": [ { "object": "scan", "…": "…" } ],
+  "pagination": { "has_more": true, "next_cursor": "…" }
+}
+```
+
+Errors are structured and self-identifying:
+
+```json
+{
+  "error": {
+    "type": "…",
+    "code": "…",
+    "message": "Human-readable explanation",
+    "param": "the offending parameter, when applicable",
+    "request_id": "…"
+  }
+}
+```
+
+Every response carries an `X-Request-Id` header; include it when reporting
+issues.
+
+## Pagination
+
+Every list endpoint is cursor-based:
+
+- `?limit=`, page size, default `25`, max `250`
+- `?cursor=`, opaque cursor from the previous page's `next_cursor`
+- `?sort=` and `?order=`, sorting
+
+Keep requesting with the returned `next_cursor` until `has_more` is `false`.
 
 ## Rate limits
 
-- Gecko applies `1000` requests per hour to each API key.
-- Authenticated responses can include `X-RateLimit-Remaining` and
-  `X-RateLimit-Reset`.
-- Gecko returns `429 Too Many Requests` when a key reaches its current limit.
+Limits are per key and depend on your plan:
+
+| Plan | Requests per hour |
+| --- | --- |
+| Free | 100 |
+| Pro | 1,000 |
+| Enterprise | 5,000 |
+
+Responses include `X-RateLimit-*` headers; Gecko returns
+`429 Too Many Requests` when a key reaches its limit. MCP traffic from
+[connected AI tools](/ai-tools/overview) shares the same budget.
+
+## Idempotency
+
+Send an `Idempotency-Key` header on any `POST` or `PATCH` to make retries
+safe. Replays return the originally stored response with an
+`Idempotent-Replayed: true` header.
+
+## Generate a client
+
+There's no hand-written SDK to install; generate types or a full client from
+the live spec:
+
+<CodeGroup>
+```bash TypeScript types
+npx openapi-typescript https://app.gecko.security/api/v1/openapi.json -o gecko-api.d.ts
+```
+
+```bash Full TypeScript client
+npx @hey-api/openapi-ts -i https://app.gecko.security/api/v1/openapi.json -o src/client
+```
+</CodeGroup>
+
+Postman, Insomnia, and Bruno import OpenAPI 3.1 natively; use **Import** >
+**Link** with the spec URL.
 
 ## What you can do
 
 <CardGroup cols={2}>
   <Card title="Scans" icon="radar">
-    List scans, launch a new scan, fetch scan vulnerabilities, and download scan
-    artifacts.
+    List and trigger scans, fetch a scan's vulnerabilities, discovered API
+    endpoints, and generated wiki.
   </Card>
   <Card title="Repositories" icon="folder">
-    List repositories and fetch repository-level vulnerability data.
+    List repositories, update repository settings, and read per-repository
+    scans and vulnerabilities.
   </Card>
   <Card title="Vulnerabilities" icon="shield-halved">
-    Read vulnerabilities across every scan in the active team.
+    Read findings with full evidence and triage them (confirm, dismiss,
+    accept risk, reopen).
   </Card>
-  <Card title="Artifacts" icon="file-code">
-    Fetch stored endpoint definitions and generated wiki output for a scan.
+  <Card title="Schedules" icon="clock">
+    Create and manage recurring scan schedules.
+  </Card>
+  <Card title="Webhooks" icon="webhook">
+    Subscribe to scan and vulnerability events with signed deliveries.
+  </Card>
+  <Card title="Releases" icon="box">
+    For hybrid deployments: fetch digest-pinned scanner image releases per
+    channel.
   </Card>
 </CardGroup>
 
 <Check>
-  Need request and response details? Open any endpoint page in the API
-  Reference sidebar.
+  Need request and response details? Open any endpoint page in the sidebar;
+  they're generated from the same spec the API serves.
 </Check>

@@ -136,6 +136,25 @@ What it does and doesn't do:
   authorization from your GitLab profile's applications settings. Either way
   your dashboard visibility is gone until you link again.
 
+### Connected accounts
+
+**Settings** > **Authentication** also lists your **connected accounts**:
+your identities on GitHub, GitLab, Slack, Linear, and Jira. These are about
+*attribution* (showing the right name and avatar next to your commits, PRs,
+and tickets), not access.
+
+Each row shows the provider, your handle and avatar, and a status:
+
+| Status | Meaning |
+| --- | --- |
+| **Connected** | A confirmed identity, you linked it yourself or signed in with it. |
+| **Suggested** | An unconfirmed match, found in your team's provider directory, or seen on commits and PRs with your email. Confirm with **That's me** or clear it with **Remove**. |
+
+GitLab identities are tracked **per instance**: an account on your
+self-managed GitLab is a distinct identity from an account with the same
+user ID on GitLab.com or another instance, so identities from different
+instances can never collide.
+
 ## FAQ
 
 <AccordionGroup>

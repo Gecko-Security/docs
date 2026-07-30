@@ -82,6 +82,17 @@
             ]
           },
           {
+            "group": "AI agents",
+            "pages": [
+              "ai-tools/overview",
+              "ai-tools/claude",
+              "ai-tools/claude-code",
+              "ai-tools/codex",
+              "ai-tools/chatgpt",
+              "ai-tools/other-clients"
+            ]
+          },
+          {
             "group": "Administration",
             "pages": [
               "access/identity-model",
@@ -121,36 +132,64 @@
           {
             "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/introduction",
+              "api-reference/webhooks"
             ]
           },
           {
             "group": "Scans",
             "pages": [
-              "GET /api/v1/scans",
-              "POST /api/v1/scans",
-              "GET /api/v1/scans/{scanId}/vulnerabilities",
-              "GET /api/v1/scans/{scanId}/endpoints",
-              "GET /api/v1/scans/{scanId}/wiki"
+              "GET /scans",
+              "POST /scans",
+              "GET /scans/{id}",
+              "GET /scans/{id}/vulnerabilities",
+              "GET /scans/{id}/endpoints",
+              "GET /scans/{id}/wiki"
             ]
           },
           {
             "group": "Repositories",
             "pages": [
-              "GET /api/v1/repositories",
-              "GET /api/v1/repositories/{repositoryId}/vulnerabilities"
+              "GET /repositories",
+              "GET /repositories/{owner}/{repo}",
+              "PATCH /repositories/{owner}/{repo}",
+              "GET /repositories/{owner}/{repo}/scans",
+              "GET /repositories/{owner}/{repo}/vulnerabilities"
             ]
           },
           {
             "group": "Vulnerabilities",
             "pages": [
-              "GET /api/v1/vulnerabilities"
+              "GET /vulnerabilities",
+              "GET /vulnerabilities/{id}",
+              "PATCH /vulnerabilities/{id}"
             ]
           },
           {
-            "group": "Utility",
+            "group": "Schedules",
             "pages": [
-              "GET /api/v1/health"
+              "GET /schedules",
+              "POST /schedules",
+              "GET /schedules/{id}",
+              "PATCH /schedules/{id}",
+              "DELETE /schedules/{id}"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "GET /webhooks",
+              "POST /webhooks",
+              "GET /webhooks/{id}",
+              "PATCH /webhooks/{id}",
+              "DELETE /webhooks/{id}"
+            ]
+          },
+          {
+            "group": "Releases",
+            "pages": [
+              "GET /releases/{channel}",
+              "GET /releases/{channel}/latest"
             ]
           }
         ]

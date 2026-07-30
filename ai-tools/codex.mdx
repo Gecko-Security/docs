@@ -1,0 +1,48 @@
+---
+title: "Codex"
+icon: "square-code"
+description: "Connect Gecko to the Codex CLI, IDE, and Codex Cloud."
+---
+
+Connect Gecko to Codex using an API key. Create the key first under
+**Settings** > **API Keys**.
+
+<Steps>
+<Step title="Export your API key">
+  ```bash
+  export GECKO_API_KEY=gk_your_key_here
+  ```
+</Step>
+<Step title="Add the server">
+  ```bash
+  codex mcp add gecko --url https://app.gecko.security/api/mcp --bearer-token-env-var GECKO_API_KEY
+  ```
+</Step>
+</Steps>
+
+For **Codex Cloud**, set `GECKO_API_KEY` in the environment's secrets. The
+server is stateless, so ephemeral sandboxes reconnect with no session state.
+
+<Check>
+  Ask Codex to list your Gecko repositories to confirm the connection.
+</Check>
+
+See the [overview](/ai-tools/overview) for available tools and how access is
+scoped.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Calls fail with an authentication error">
+    Confirm `GECKO_API_KEY` is set in the environment Codex actually runs in
+    (shell profiles don't reach Codex Cloud; use the environment's secrets),
+    and that the key still exists under **Settings** &gt; **API Keys**. Keys
+    are revoked the moment they're deleted.
+  </Accordion>
+  <Accordion title="Reads work but triage or tickets fail">
+    An API key can do exactly what its owner's role allows, no more. If the
+    key owner's role lacks triage or ticket permissions, those tools return
+    permission errors while reads keep working. See
+    [Teams &amp; permissions](/teams-permissions).
+  </Accordion>
+</AccordionGroup>

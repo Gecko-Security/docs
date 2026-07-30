@@ -1,22 +1,23 @@
 ---
 title: "API keys"
 icon: "key"
-description: "Create and manage keys for the Gecko v1 API."
+description: "Create and manage keys for the Gecko v1 API and MCP server."
 ---
 
-API keys authenticate requests to the [Gecko v1 API](/api-reference/introduction).
-Keys are scoped to the team they're created in. Manage them in **Settings** &gt;
+API keys authenticate requests to the [Gecko v1 API](/api-reference/introduction)
+and can also connect [AI tools](/ai-tools/overview) that don't support OAuth.
+Keys are scoped to the team they're created in. Manage them in **Settings** >
 **API Keys**.
 
 <Note>
-  API access is a Pro/Enterprise feature.
+  API keys are available on **Pro and Enterprise** plans.
 </Note>
 
 ## Create a key
 
 <Steps>
 <Step title="Open API Keys">
-  Go to **Settings** &gt; **API Keys** and click **Create API Key**.
+  Go to **Settings** > **API Keys** and click **Create API Key**.
 </Step>
 <Step title="Name it">
   Give the key a descriptive name, such as `CI/CD Pipeline` or `Production`.
@@ -27,15 +28,21 @@ Keys are scoped to the team they're created in. Manage them in **Settings** &gt;
 </Step>
 </Steps>
 
+<Tip>
+  A key can do anything the owner's role allows. For scope-limited access,
+  such as an AI tool that should only read findings, connect an OAuth
+  agent under **Settings** > **Integrations** instead. See
+  [Connect AI tools](/ai-tools/overview).
+</Tip>
+
 ## Use a key
 
-Send the key in the `X-API-Key` header on every authenticated request:
+Send the key either as a bearer token or in the `X-API-Key` header:
 
 <CodeGroup>
 ```bash cURL
-curl https://app.gecko.security/api/v1/scans?limit=10 \
-  -H "X-API-Key: $GECKO_API_KEY" \
-  -H "Accept: application/json"
+curl "https://app.gecko.security/api/v1/scans?limit=10" \
+  -H "Authorization: Bearer $GECKO_API_KEY"
 ```
 
 ```python Python
@@ -44,7 +51,7 @@ import requests
 res = requests.get(
     "https://app.gecko.security/api/v1/scans",
     params={"limit": 10},
-    headers={"X-API-Key": "YOUR_API_KEY"},
+    headers={"Authorization": "Bearer YOUR_API_KEY"},
 )
 res.raise_for_status()
 print(res.json())
@@ -53,23 +60,29 @@ print(res.json())
 ```javascript JavaScript
 const res = await fetch(
   "https://app.gecko.security/api/v1/scans?limit=10",
-  { headers: { "X-API-Key": process.env.GECKO_API_KEY, Accept: "application/json" } },
+  { headers: { Authorization: `Bearer ${process.env.GECKO_API_KEY}` } },
 );
 const data = await res.json();
 console.log(data);
 ```
 </CodeGroup>
 
-Gecko scopes every response to the team attached to the key. See the
+Gecko scopes every response to the team attached to the key and checks the
+key owner's current role permissions on every request. See the
 [API reference](/api-reference/introduction) for endpoints, rate limits, and
 examples.
 
 ## Manage and revoke
 
-The API Keys table shows each key's name, masked preview, creation date, and
-last-used time. Delete a key to revoke it immediately.
+Keys are visible to the whole team. The API Keys table shows each key's name,
+masked preview, **who created it**, creation date, and last-used time.
+Usage is logged per request, so last-used stays accurate.
+
+Delete a key to revoke it immediately. You can always delete your own keys;
+deleting a teammate's requires the `api_keys.manage` permission.
 
 <Warning>
-  Deleting a key takes effect right away. Rotate by creating the new key first,
-  updating your integration, then deleting the old one.
+  Deleting a key takes effect right away, including for any AI tools
+  connected with it. Rotate by creating the new key first, updating your
+  integration, then deleting the old one.
 </Warning>

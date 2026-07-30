@@ -1,0 +1,117 @@
+---
+title: "ChatGPT"
+icon: "comment-dots"
+description: "Connect Gecko to ChatGPT on the web or in the desktop app."
+---
+
+ChatGPT connects to Gecko in two different ways depending on where you use
+it: the web app uses a custom connector with OAuth, while the desktop app
+registers Gecko as an MCP server with an API key.
+
+<Tabs>
+<Tab title="ChatGPT web">
+
+Custom connectors are hidden behind **Developer mode** and require a Plus,
+Pro, Team, Enterprise, or Edu plan. On Team and Enterprise, a workspace admin
+can disable Developer mode entirely.
+
+<Steps>
+<Step title="Enable Developer mode">
+  Go to **Settings** > **Connectors**, open **Advanced** at the bottom, and
+  toggle **Developer mode** on. An **Add custom connector** button appears in
+  the Connectors panel.
+</Step>
+<Step title="Add the connector">
+  Click **Add custom connector** and enter the endpoint:
+
+  ```
+  https://app.gecko.security/api/mcp
+  ```
+</Step>
+<Step title="Approve the connection">
+  ChatGPT opens Gecko's authorization screen; check the team and scopes,
+  then approve. Auth is OAuth, so no API key is needed.
+</Step>
+</Steps>
+
+</Tab>
+<Tab title="ChatGPT desktop app">
+
+The desktop app manages MCP servers under **Settings** > **Plugins**, and
+authenticates with an API key. Create the key first under **Settings** >
+**API Keys** in Gecko, and export it in your shell profile:
+
+```bash
+export GECKO_API_KEY=gk_your_key_here
+```
+
+**Do it yourself:**
+
+<Steps>
+<Step title="Open the MCP server list">
+  Go to **Settings** > **Plugins** and select the **MCPs** tab.
+</Step>
+<Step title="Add the server">
+  Click **+ Add server**, set the type to **Streamable HTTP**, and fill in:
+
+  | Field | Value |
+  | --- | --- |
+  | Name | `gecko` |
+  | URL | `https://app.gecko.security/api/mcp` |
+  | Bearer token env var | `GECKO_API_KEY` |
+</Step>
+</Steps>
+
+**Or let the agent do it**; paste this into a chat:
+
+```text
+Add an MCP server to your own configuration: name it "gecko", type
+streamable HTTP, URL https://app.gecko.security/api/mcp, authenticated
+with the bearer token in the GECKO_API_KEY environment variable. Then
+verify the connection by listing my Gecko repositories.
+```
+
+The desktop app shares its MCP configuration with the Codex CLI, so
+`codex mcp add` works too; see the [Codex guide](/ai-tools/codex).
+
+</Tab>
+</Tabs>
+
+<Check>
+  Ask ChatGPT something like *"Show my latest Gecko scan"* to confirm the
+  connection.
+</Check>
+
+To disconnect, remove the connector or MCP server in ChatGPT and revoke the
+credential in Gecko under **Settings** > **Integrations** > **Agents**. See
+the [overview](/ai-tools/overview) for available tools and how access is
+scoped.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="There's no Add custom connector button on the web">
+    Developer mode isn't on, or isn't available: it requires a Plus, Pro,
+    Team, Enterprise, or Edu plan, and workspace admins can disable it on
+    Team and Enterprise. Enable it under **Settings** &gt; **Connectors** &gt;
+    **Advanced**.
+  </Accordion>
+  <Accordion title="The authorization screen won't let me approve">
+    If **Approve** is replaced by *"Agent connections are available on Pro
+    and Enterprise plans"*, the selected team is on the Free tier; switch
+    teams in the picker or upgrade. If no team appears, you don't hold the
+    `api_keys.manage` permission on any qualifying team.
+  </Accordion>
+  <Accordion title="The desktop app can't reach the server">
+    Confirm `GECKO_API_KEY` is exported in a place the app actually reads
+    (a GUI app may not source your shell profile; restart it after
+    exporting), and that the key still exists under **Settings** &gt;
+    **API Keys** in Gecko. Then run the curl smoke test from the
+    [overview](/ai-tools/overview#troubleshooting).
+  </Accordion>
+  <Accordion title="ChatGPT connected, but Gecko tools return permission errors">
+    The connection is capped by the granting user's live Gecko role. If the
+    role changed since connecting, the granted scopes no longer match; check
+    [your role](/teams-permissions) or reconnect.
+  </Accordion>
+</AccordionGroup>

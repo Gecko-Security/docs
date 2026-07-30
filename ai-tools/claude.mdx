@@ -1,0 +1,61 @@
+---
+title: "Claude & Claude Desktop"
+sidebarTitle: "Claude"
+icon: "message-bot"
+description: "Connect Gecko to claude.ai and Claude Desktop as a custom connector."
+---
+
+Connect Gecko to Claude on claude.ai or Claude Desktop. Auth is OAuth; no
+API key to copy. Requires a Claude Pro, Max, Team, or Enterprise plan.
+
+<Steps>
+<Step title="Open Connectors">
+  In Claude, open [**Settings** > **Connectors**](https://claude.ai/customize/connectors).
+</Step>
+<Step title="Add the Gecko connector">
+  Click **Add custom connector** and paste:
+
+  ```
+  https://app.gecko.security/api/mcp
+  ```
+</Step>
+<Step title="Connect and approve">
+  Click **Connect**. Claude opens Gecko's authorization screen; check the
+  team and scopes, then approve. You're returned to Claude connected.
+</Step>
+</Steps>
+
+<Check>
+  Ask Claude something like *"List my critical open findings in Gecko"* to
+  confirm the connection.
+</Check>
+
+Gecko's packaged prompts (`triage_criticals`, `security_review`,
+`fix_finding`) are available from Claude's prompt picker in clients that
+support MCP prompts.
+
+To disconnect, remove the connector in Claude or revoke it in Gecko under
+**Settings** > **Integrations** > **Agents**. See the
+[overview](/ai-tools/overview) for available tools and how access is scoped.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="The authorization screen won't let me approve">
+    If **Approve** is replaced by *"Agent connections are available on Pro
+    and Enterprise plans"*, the selected team is on the Free tier; switch
+    teams in the picker or upgrade. If no team appears at all, you don't
+    hold the `api_keys.manage` permission on any qualifying team; ask a
+    team admin.
+  </Accordion>
+  <Accordion title="I don't see an Add custom connector option">
+    Custom connectors require a paid Claude plan (Pro, Max, Team, or
+    Enterprise). On Team/Enterprise, an owner may need to enable custom
+    connectors for the organization first.
+  </Accordion>
+  <Accordion title="Claude connected, but Gecko tools return permission errors">
+    The connection is capped by your live Gecko role. If your role changed
+    since you approved, the granted scopes no longer match; check
+    [your role](/teams-permissions) or reconnect.
+  </Accordion>
+</AccordionGroup>

@@ -1,43 +1,67 @@
 ---
-title: "Claude Code setup"
-description: "Configure Claude Code for your documentation workflow"
-icon: "asterisk"
+title: "Claude Code"
+icon: "terminal"
+description: "Connect Gecko to Claude Code over MCP with one command."
 ---
 
-Set up Claude Code to help you write and maintain your Mintlify documentation.
-
-## Prerequisites
-
-- Active Claude subscription (Pro, Max, or API access)
-
-## Setup
+Connect Gecko to Claude Code so it can read findings, triage, and file
+tickets from your terminal.
 
 <Steps>
-<Step title="Install Claude Code">
+<Step title="Add the server">
   ```bash
-  npm install -g @anthropic-ai/claude-code
+  claude mcp add --transport http gecko https://app.gecko.security/api/mcp
   ```
 </Step>
-
-<Step title="Install the Mintlify skill">
-  In your docs directory, run:
-
-  ```bash
-  npx skills add https://mintlify.com/docs
-  ```
-
-  This gives Claude Code Mintlify's component reference, writing standards,
-  and workflow guidance.
-</Step>
-
-<Step title="Customize project instructions">
-  Edit `AGENTS.md` in your project root to add project-specific terminology,
-  style preferences, and content boundaries.
-</Step>
-
-<Step title="Start writing with Claude Code">
-  ```bash
-  claude
-  ```
+<Step title="Authenticate">
+  In Claude Code, run `/mcp`, select **gecko**, and pick **Authenticate**.
+  Approve Gecko's authorization screen in the browser. Tokens are stored by
+  Claude Code, not in the config file.
 </Step>
 </Steps>
+
+<Check>
+  Run `/mcp` again; the gecko server should show as connected.
+</Check>
+
+## Use an API key instead
+
+For headless or CI use, skip OAuth and pass a static key created under
+**Settings** > **API Keys**:
+
+```bash
+claude mcp add --transport http gecko https://app.gecko.security/api/mcp \
+  --header "Authorization: Bearer $GECKO_API_KEY"
+```
+
+## Plugin
+
+The `gecko-security` Claude Code plugin ships the same server plus a security
+skill. With the plugin installed, Gecko's packaged prompts surface as slash
+commands: `/mcp__gecko__triage_criticals`, `/mcp__gecko__security_review`,
+and `/mcp__gecko__fix_finding`.
+
+See the [overview](/ai-tools/overview) for available tools and how access is
+scoped.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Authentication never completes">
+    The OAuth flow ends on Gecko's authorization screen; if **Approve** is
+    replaced by a plan message, the selected team is on the Free tier, and
+    if no team is offered, you lack the `api_keys.manage` permission. Fix
+    the gate, then run `/mcp` &gt; **Authenticate** again.
+  </Accordion>
+  <Accordion title="The server shows as failed after adding it">
+    Confirm the transport is `http` (not `sse`); the server is stateless
+    Streamable HTTP and rejects session-based transports. Then run the curl
+    smoke test from the [overview](/ai-tools/overview#troubleshooting) to
+    separate a network problem from a client one.
+  </Accordion>
+  <Accordion title="It worked, then stopped">
+    If you connected with an API key, the key was probably deleted or your
+    role changed; keys die immediately on deletion. Re-add with a fresh key,
+    or switch to OAuth so there's no static secret to lose.
+  </Accordion>
+</AccordionGroup>
