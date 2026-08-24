@@ -176,6 +176,13 @@
             ]
           },
           {
+            "group": "Integrations",
+            "pages": [
+              "GET /integrations/gitlab",
+              "PATCH /integrations/gitlab"
+            ]
+          },
+          {
             "group": "Webhooks",
             "pages": [
               "GET /webhooks",

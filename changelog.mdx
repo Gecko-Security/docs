@@ -3,6 +3,22 @@ title: "Changelog"
 description: "Product and documentation updates for Gecko Security."
 ---
 
+<Update label="August 2026" description="GitLab token expiry reminders and rotation API">
+  **GitLab token expiry reminders.** Gecko now checks your GitLab token's
+  expiration date daily and emails team admins 7 days before it expires and
+  again when it has expired or been revoked, so the integration never goes
+  dark by surprise. See
+  [Token expiry and rotation](/connect/gitlab#token-expiry-and-rotation).
+
+  **Rotate the GitLab token via the API.** New v1 endpoints:
+  [`GET /integrations/gitlab`](/api-reference/get-the-gitlab-integration)
+  returns the connection state including the token expiry date, and
+  [`PATCH /integrations/gitlab`](/api-reference/rotate-the-gitlab-service-account-token)
+  swaps in a fresh token — built for secret managers and rotation scripts.
+  New tokens are validated against your instance, including the required
+  `api` scope, before they're stored.
+</Update>
+
 <Update label="July 2026" description="AI agents, MCP server, and API v1 redesign">
   **Connect your AI tools.** Gecko now hosts a remote MCP server at
   `https://app.gecko.security/api/mcp`. Connect Claude, Claude Code, ChatGPT,
