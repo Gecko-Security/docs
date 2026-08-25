@@ -1063,6 +1063,94 @@
         },
         "additionalProperties": false
       },
+      "GitLabIntegration": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "const": "gitlab_integration"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "instance_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "auth_mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "service_account_token",
+                  "oauth"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "token_expires_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_validated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tracked_repositories_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "object",
+          "enabled",
+          "instance_url",
+          "auth_mode",
+          "token_expires_at",
+          "last_validated_at",
+          "tracked_repositories_count"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateGitLabIntegrationRequest": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "minLength": 1
+          },
+          "instance_url": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "access_token"
+        ],
+        "additionalProperties": false
+      },
       "ImageRelease": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -2937,6 +3025,141 @@
         "responses": {
           "200": {
             "description": "Deleted"
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/integrations/gitlab": {
+      "get": {
+        "summary": "Get the GitLab integration",
+        "description": "Current GitLab connection state for the team, including the stored token expiry date. Never returns credentials.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitLabIntegration"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Rotate the GitLab service-account token",
+        "description": "Validates the token against the GitLab instance (including the required \"api\" scope) before storing it. Omit `instance_url` to keep the currently connected instance.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Safely retry a POST/PATCH; a replayed key returns the original response.",
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGitLabIntegrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitLabIntegration"
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication error",

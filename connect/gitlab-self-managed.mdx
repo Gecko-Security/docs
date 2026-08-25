@@ -143,7 +143,10 @@ push fix branches. Nothing above Developer is needed.
   example `https://gitlab.example.com`, and the service account's token. Use
   the base URL only, without `/api/v4`. The instance must be reachable over
   HTTPS with a valid certificate. Gecko rejects instance URLs that aren't
-  HTTPS or that point at private or loopback addresses.
+  HTTPS or that point at private or loopback addresses. On connect, Gecko
+  validates the token and confirms it carries the `api` scope, so an
+  under-scoped token is rejected immediately instead of failing later on MR
+  comments.
 </Step>
 
 <Step title="Select repositories">
@@ -409,10 +412,17 @@ axes you control:
 ## Rotate or revoke access
 
 - **Rotate**: create a new PAT on the service account and paste it into
-  **Settings** &gt; **GitLab**. Repository selection, scan history, and
-  findings are unchanged. Rotation is a paste, not a re-setup. Put the
-  expiration date on your team's rotation calendar; when the PAT expires,
-  syncs, scans, and MR comments stop until a new token is added.
+  **Settings** &gt; **GitLab**, or push it programmatically with
+  `PATCH /v1/integrations/gitlab`
+  ([API reference](/api-reference/rotate-the-gitlab-service-account-token)) —
+  built for secret managers and rotation scripts. Either way, Gecko validates
+  the token and its `api` scope before storing it. Repository selection, scan
+  history, and findings are unchanged. Rotation is a paste, not a re-setup.
+- **Expiry reminders**: Gecko checks the PAT's expiration date daily and
+  emails your team admins 7 days before it expires and again when it has
+  expired or been revoked. When the PAT expires, syncs, scans, and MR
+  comments stop until a new token is added, so still put the date on your
+  rotation calendar.
 - **Revoke**: revoking the PAT in GitLab cuts off all of Gecko's access to
   your instance immediately. API calls and clones both fail from that moment.
   Delete the webhook to stop event delivery too. This is your kill switch, and
@@ -514,9 +524,12 @@ Start from the symptom. Each one points at a different layer:
     connection.
   </Accordion>
   <Accordion title="What happens when the PAT expires?">
-    Syncs, scans, and MR comments stop until a new token is pasted into
-    **Settings** &gt; **GitLab**. Nothing else is lost. Align the PAT's
-    expiration with your rotation calendar so it never expires by surprise.
+    Team admins get a reminder email 7 days before expiry and again when the
+    PAT has expired. Syncs, scans, and MR comments stop until a new token is
+    added — in **Settings** &gt; **GitLab** or via
+    [the API](/api-reference/rotate-the-gitlab-service-account-token).
+    Nothing else is lost. Align the PAT's expiration with your rotation
+    calendar so it never expires by surprise.
   </Accordion>
   <Accordion title="We don't have Premium/Ultimate. Can we still do this?">
     Yes. Use a regular user account reserved for the integration instead of a
