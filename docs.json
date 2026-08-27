@@ -196,7 +196,8 @@
             "group": "Releases",
             "pages": [
               "GET /releases/{channel}",
-              "GET /releases/{channel}/latest"
+              "GET /releases/{channel}/latest",
+              "GET /releases/{channel}/{version}"
             ]
           }
         ]

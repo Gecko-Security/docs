@@ -1166,6 +1166,17 @@
           "version": {
             "type": "string"
           },
+          "bx_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Customer release version, for example `1.1`. Minted once per pushed image on channels that use a customer release sequence; `null` on other channels."
+          },
           "git_sha": {
             "type": "string"
           },
@@ -1199,6 +1210,7 @@
           "object",
           "channel",
           "version",
+          "bx_version",
           "git_sha",
           "image_digest",
           "image_uri",
@@ -3354,6 +3366,84 @@
             "schema": {
               "type": "string",
               "description": "Release channel name. Channel names are shared privately by your Gecko account contact and are not listed publicly."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageRelease"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authorization error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/releases/{channel}/{version}": {
+      "get": {
+        "summary": "Resolve a version to its image release",
+        "description": "Looks up one release by version within a channel. The path version matches either the customer release version (`bx_version`, for example `1.1`) or the Gecko scanner version (`version`, for example `1.1.0`). When the same scanner version was pushed more than once, the newest release is returned. Pull the digest-pinned `image_ref`, never a mutable tag. Unknown channels and unknown versions return `not_found`.",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Release channel name. Channel names are shared privately by your Gecko account contact and are not listed publicly."
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Either the customer release version (for example `1.1`) or the Gecko scanner version (for example `1.1.0`)."
             }
           }
         ],

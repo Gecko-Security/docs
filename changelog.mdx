@@ -3,6 +3,20 @@ title: "Changelog"
 description: "Product and documentation updates for Gecko Security."
 ---
 
+<Update label="August 2026" description="Customer release versions and version lookup">
+  **Customer release versions.** Image releases on customer channels now carry
+  `bx_version`, a simple customer-facing version (`1.1`, `1.2`, ...) minted once
+  per pushed image. Each version maps to exactly one git SHA and image digest,
+  so "you are on 1.1" is always an exact, pinnable statement.
+
+  **Look up a release by version.** New endpoint:
+  [`GET /releases/{channel}/{version}`](/api-reference/resolve-a-version-to-its-image-release)
+  resolves a version to its release. The path version matches either the
+  customer release version (for example `1.1`) or the Gecko scanner version
+  (for example `1.1.0`), and the response includes the digest-pinned
+  `image_ref` to pull.
+</Update>
+
 <Update label="August 2026" description="GitLab token expiry reminders and rotation API">
   **GitLab token expiry reminders.** Gecko now checks your GitLab token's
   expiration date daily and emails team admins 7 days before it expires and
@@ -14,7 +28,7 @@ description: "Product and documentation updates for Gecko Security."
   [`GET /integrations/gitlab`](/api-reference/get-the-gitlab-integration)
   returns the connection state including the token expiry date, and
   [`PATCH /integrations/gitlab`](/api-reference/rotate-the-gitlab-service-account-token)
-  swaps in a fresh token — built for secret managers and rotation scripts.
+  swaps in a fresh token, built for secret managers and rotation scripts.
   New tokens are validated against your instance, including the required
   `api` scope, before they're stored.
 </Update>

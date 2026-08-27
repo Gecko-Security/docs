@@ -231,6 +231,30 @@ your own **private ECR** and override `scanner_image_url`.
   </Step>
 </Steps>
 
+## Scanner versions and updates
+
+Gecko records every scanner image published for your channel as a release: a
+customer version (`1.1`, `1.2`, ...), the Gecko scanner version, the git SHA, and
+the immutable image digest. When your Gecko contact says "you are on 1.1", the
+API resolves that to the exact image:
+
+```bash
+# Newest release for your channel
+curl -H "Authorization: Bearer $GECKO_API_KEY" \
+  https://app.gecko.security/api/v1/releases/$CHANNEL/latest
+
+# Resolve a specific version (customer version "1.1" or scanner version "1.1.0")
+curl -H "Authorization: Bearer $GECKO_API_KEY" \
+  https://app.gecko.security/api/v1/releases/$CHANNEL/1.1
+```
+
+Each response includes a digest-pinned `image_ref` and a ready-to-run
+`pull_command`. If you [mirror the image into your own
+registry](#use-your-own-image-registry-optional), mirror by that digest so what
+you run is exactly what the release records. Your channel name is shared
+privately by your Gecko account contact. Full details in the
+[API reference](/api-reference/resolve-a-version-to-its-image-release).
+
 ## Security model
 
 Gecko's reach into your account is exactly two actions, `SendMessage` to one queue
